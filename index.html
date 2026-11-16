@@ -12,24 +12,27 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/fonts.css">
 <style>
-/* Layout: one reading column with a wide hero; anatomy-lab palette — specimen bone, muscle red, cool steel ground, blue instrument accent. */
+/* Layout: navy "light-box" hero holding a live 3D specimen; calm blue-tinted reading sections below. */
 :root{
-  --bg:#eef1f4; --surface:#ffffff; --ink:#152030; --muted:#566475; --line:#d6dde5;
-  --accent:#2457d6; --accent-ink:#ffffff; --accent-soft:#e3eafb;
-  --muscle:#b8443d; --bone:#e6dcc6; --vessel:#3a63c6;
+  --bg:#edf3fc; --surface:#ffffff; --tint:#f5f8fe; --ink:#0f1f3d; --muted:#4d6182; --line:#d3dff0;
+  --accent:#2257e0; --accent-ink:#ffffff; --accent-soft:#e2ebfd; --accent-2:#5aa8ff;
+  --hero-top:#0a1a40; --hero-bot:#12347f; --hero-ink:#f2f6ff; --hero-muted:#b4c6ea; --hero-line:rgba(180,198,234,.22);
+  --glow:#57d2ff;
   --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-la:"IBM Plex Serif",Georgia,"Times New Roman",serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
-  --shadow:0 1px 2px rgba(21,32,48,.06),0 12px 40px rgba(21,32,48,.10);
+  --shadow:0 1px 2px rgba(15,31,61,.06),0 14px 40px rgba(15,31,61,.12);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1217; --surface:#141b23; --ink:#e5eaf0; --muted:#94a2b1; --line:#25303b;
-  --accent:#7ea4ff; --accent-ink:#0d1217; --accent-soft:#1b2843;
-  --muscle:#e0675f; --bone:#cdbf9f; --vessel:#7e9ff0; --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 40px rgba(0,0,0,.45); color-scheme:dark}}
+  --bg:#08101f; --surface:#0f1a2e; --tint:#0c1628; --ink:#e3ebf7; --muted:#8fa3c2; --line:#1f2f4b;
+  --accent:#7ea8ff; --accent-ink:#08101f; --accent-soft:#16264a; --accent-2:#7ec4ff;
+  --hero-top:#050c1e; --hero-bot:#0c2259; --hero-line:rgba(180,198,234,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 40px rgba(0,0,0,.45); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0d1217; --surface:#141b23; --ink:#e5eaf0; --muted:#94a2b1; --line:#25303b;
-  --accent:#7ea4ff; --accent-ink:#0d1217; --accent-soft:#1b2843;
-  --muscle:#e0675f; --bone:#cdbf9f; --vessel:#7e9ff0; --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 40px rgba(0,0,0,.45); color-scheme:dark}
+  --bg:#08101f; --surface:#0f1a2e; --tint:#0c1628; --ink:#e3ebf7; --muted:#8fa3c2; --line:#1f2f4b;
+  --accent:#7ea8ff; --accent-ink:#08101f; --accent-soft:#16264a; --accent-2:#7ec4ff;
+  --hero-top:#050c1e; --hero-bot:#0c2259; --hero-line:rgba(180,198,234,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 40px rgba(0,0,0,.45); color-scheme:dark}
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -44,92 +47,117 @@ h1,h2,h3{text-wrap:balance;margin:0;letter-spacing:-.015em}
 h2{font-size:clamp(1.6rem,3vw,2.1rem);line-height:1.15;font-weight:600}
 h3{font-size:1.08rem;font-weight:600;line-height:1.3}
 p{margin:0}
-.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:12px 20px;font:600 .97rem var(--f-ui);text-decoration:none;border:1px solid transparent;transition:transform .15s,background .15s,border-color .15s}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:12px 20px;font:600 .97rem var(--f-ui);text-decoration:none;border:1px solid transparent;transition:transform .15s,background .15s,border-color .15s;cursor:pointer}
 .btn-primary{background:var(--accent);color:var(--accent-ink)}
 .btn-primary:hover{transform:translateY(-1px)}
 .btn-ghost{border-color:var(--line);color:var(--ink);background:var(--surface)}
 .btn-ghost:hover{border-color:var(--muted)}
-.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn:focus-visible,a:focus-visible,summary:focus-visible,button:focus-visible{outline:2px solid var(--accent-2);outline-offset:3px}
 
-/* header */
+/* ---------- hero band (navy, holds the header too) ---------- */
+.band{position:relative;color:var(--hero-ink);background:
+  radial-gradient(900px 520px at 72% 46%,rgba(87,210,255,.16),transparent 62%),
+  linear-gradient(180deg,var(--hero-top),var(--hero-bot));overflow:hidden}
+.band::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(var(--hero-line) 1px,transparent 1px),linear-gradient(90deg,var(--hero-line) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent)}
+.band>*{position:relative;z-index:1}
 .top{padding-block:18px}
 .top .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.logo{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--ink);text-decoration:none;margin-right:auto}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--hero-ink);text-decoration:none;margin-right:auto}
 .logo img{width:30px;height:30px}
 .nav{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
-.nav a{color:var(--muted);text-decoration:none;font-size:.95rem}
-.nav a:hover{color:var(--ink)}
-.nav .btn{padding:8px 14px;font-size:.9rem}
-.nav a.btn-primary{color:var(--accent-ink)}
+.nav a{color:var(--hero-muted);text-decoration:none;font-size:.95rem}
+.nav a:hover{color:var(--hero-ink)}
+.nav a.btn{padding:8px 14px;font-size:.9rem;background:var(--hero-ink);color:var(--hero-top)}
 
-/* hero */
-.hero{padding-block:36px 56px}
-.hero .wrap{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:48px;align-items:center}
-.hero h1{font-size:clamp(2.3rem,5.4vw,3.9rem);line-height:1.02;font-weight:600}
-.hero h1 em{font-family:var(--f-la);font-style:italic;font-weight:500;color:var(--muscle)}
-.lede{margin-top:20px;font-size:1.12rem;color:var(--muted);max-width:34em}
+.hero{padding-block:10px 0}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center}
+.copy{padding-block:30px 60px}
+.copy .eyebrow{color:var(--hero-muted)}
+.hero h1{font-size:clamp(2.3rem,5.2vw,3.9rem);line-height:1.02;font-weight:600}
+.hero h1 em{font-family:var(--f-la);font-style:italic;font-weight:500;color:var(--glow)}
+.lede{margin-top:20px;font-size:1.12rem;color:var(--hero-muted);max-width:32em}
 .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
-.term{margin-top:34px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.95rem;max-width:30em;border-left:2px solid var(--muscle);padding-left:14px}
-.term dt{font:500 .7rem var(--f-mono);color:var(--muted);padding-top:4px}
+.band .btn-primary{background:var(--glow);color:#06142f}
+.band .btn-ghost{background:transparent;color:var(--hero-ink);border-color:rgba(180,198,234,.45)}
+.band .btn-ghost:hover{border-color:var(--hero-ink)}
+.term{margin-top:34px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.95rem;max-width:30em;border-left:2px solid var(--glow);padding-left:14px}
+.term dt{font:500 .7rem var(--f-mono);color:var(--hero-muted);padding-top:4px}
 .term dd{margin:0;min-width:0}
-.term .cap{grid-column:1/-1;font:500 .7rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-.shot{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
-.shot img{width:100%;height:auto;aspect-ratio:2720/1720}
-.shot figcaption{font-size:.82rem;color:var(--muted);padding:10px 14px;border-top:1px solid var(--line)}
+.term .cap{grid-column:1/-1;font:500 .7rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--hero-muted);margin-bottom:4px}
 
-/* figures */
-.figures{border-block:1px solid var(--line);background:var(--surface)}
+/* live specimen */
+.specimen{position:relative;height:min(78vh,680px);min-height:460px}
+.specimen canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+.specimen canvas.pointing{cursor:pointer}
+.modes{position:absolute;top:8px;right:0;display:inline-flex;border:1px solid rgba(180,198,234,.4);border-radius:999px;padding:3px;background:rgba(6,20,47,.45);backdrop-filter:blur(6px)}
+.modes button{border:0;background:none;color:var(--hero-muted);font:500 .82rem var(--f-ui);padding:6px 14px;border-radius:999px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--hero-ink);color:var(--hero-top)}
+.hhint{position:absolute;left:0;right:0;bottom:16px;text-align:center;font:500 .72rem var(--f-mono);letter-spacing:.08em;color:var(--hero-muted);pointer-events:none}
+.htip{position:absolute;left:0;top:0;pointer-events:none;min-width:180px;max-width:280px;background:rgba(6,20,47,.92);border:1px solid var(--glow);border-radius:10px;padding:9px 12px;color:var(--hero-ink);box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:.9rem;line-height:1.35;z-index:2}
+.htip b{display:block;font-weight:600}
+.htip i{display:block;color:var(--hero-muted);font-size:.85rem}
+.htip span{display:block;margin-top:6px;font:500 .68rem var(--f-mono);letter-spacing:.06em;color:var(--glow);text-transform:uppercase}
+.hload{position:absolute;inset:0;display:grid;place-items:center;color:var(--hero-muted);font:500 .8rem var(--f-mono);letter-spacing:.08em}
+.hfallback{position:absolute;inset:auto 0 0 0;margin:auto;max-height:100%;border-radius:12px;border:1px solid rgba(180,198,234,.3)}
+
+/* ---------- figures ---------- */
+.figures{background:var(--surface);border-bottom:1px solid var(--line)}
 .figures dl{margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
 .figures dl>div{padding:26px 22px;border-left:1px solid var(--line);min-width:0}
 .figures dl>div:first-child{border-left:0;padding-left:0}
 .figures dt{font:500 .72rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.figures dd{margin:6px 0 0;font-size:2rem;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.figures dd{margin:6px 0 0;font-size:2rem;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--accent)}
 
 section.block{padding-block:84px}
 .head{max-width:44rem;margin-bottom:40px}
 .head p{margin-top:14px;color:var(--muted);font-size:1.05rem}
 
-/* features */
 .features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .feat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px;display:grid;grid-template-columns:44px 1fr;gap:4px 18px}
 .feat .ic{grid-row:span 2;width:44px;height:44px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
 .feat .ic svg{width:22px;height:22px}
 .feat p{color:var(--muted);margin-top:6px}
+.shot{margin:34px 0 0;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
+.shot img{width:100%;height:auto;aspect-ratio:2720/1720}
+.shot figcaption{font-size:.84rem;color:var(--muted);padding:10px 14px;border-top:1px solid var(--line)}
 
-/* audiences */
 .who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
-.who article{border-top:2px solid var(--ink);padding-top:20px}
+.who article{border-top:2px solid var(--accent);padding-top:20px}
 .who ul{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:10px}
 .who li{display:grid;grid-template-columns:18px 1fr;gap:10px;color:var(--muted)}
-.who li::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--muscle);margin-top:9px}
-.who article:nth-child(2) li::before{background:var(--vessel)}
+.who li::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent);margin-top:9px}
+.who article:nth-child(2) li::before{background:var(--accent-2)}
 
-/* pricing */
-.price{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:34px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:32px;align-items:center}
+.price{background:linear-gradient(135deg,var(--surface),var(--tint));border:1px solid var(--line);border-radius:16px;padding:34px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:32px;align-items:center}
 .price p{color:var(--muted);margin-top:12px}
 .tiers{display:grid;gap:12px}
-.tier{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;flex-wrap:wrap}
+.tier{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;flex-wrap:wrap;background:var(--surface)}
 .tier b{font-weight:600}
 .tier span{color:var(--muted);font-size:.92rem}
 .pill{display:inline-block;font:500 .7rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:4px 9px;border-radius:999px}
 
-/* faq */
 .faq{display:grid;gap:10px;max-width:52rem}
 details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 20px}
 summary{cursor:pointer;padding:18px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:16px}
 summary::-webkit-details-marker{display:none}
-summary::after{content:"+";font:500 1.2rem var(--f-mono);color:var(--muted);transition:transform .2s}
+summary::after{content:"+";font:500 1.2rem var(--f-mono);color:var(--accent);transition:transform .2s}
 details[open] summary::after{transform:rotate(45deg)}
 details p{color:var(--muted);padding-bottom:18px;max-width:46rem}
 
-footer{border-top:1px solid var(--line);padding-block:36px 48px;color:var(--muted);font-size:.86rem}
+footer{background:var(--hero-top);color:var(--hero-muted);padding-block:36px 48px;font-size:.86rem}
 footer .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px}
 footer p+p{margin-top:8px}
+footer b{color:var(--hero-ink)}
 footer .cols{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
-footer a{color:var(--muted)}
+footer a{color:var(--hero-muted)}
+footer a:hover{color:var(--hero-ink)}
 
 @media (max-width:900px){
-  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:34px}
+  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:0}
+  .copy{padding-block:18px 8px}
+  .specimen{height:72vh;min-height:420px}
   .figures dl{grid-template-columns:repeat(2,minmax(0,1fr))}
   .figures dl>div:nth-child(3){border-left:0;padding-left:0}
   .figures dl>div:nth-child(n+3){border-top:1px solid var(--line)}
@@ -144,23 +172,23 @@ footer a{color:var(--muted)}
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap">
-    <a class="logo" href="./"><img src="favicon.svg" alt="" width="30" height="30"><span>Atlas lidského těla 3D</span></a>
-    <nav class="nav" aria-label="Hlavní">
-      <a href="#funkce">Funkce</a>
-      <a href="#pro-koho">Pro koho</a>
-      <a href="#cenik">Ceník</a>
-      <a href="#otazky">Otázky</a>
-      <a class="btn btn-primary" data-atlas href="atlas/">Otevřít atlas</a>
-    </nav>
-  </div>
-</header>
+<div class="band">
+  <header class="top">
+    <div class="wrap">
+      <a class="logo" href="./"><img src="favicon.svg" alt="" width="30" height="30"><span>Atlas lidského těla 3D</span></a>
+      <nav class="nav" aria-label="Hlavní">
+        <a href="#funkce">Funkce</a>
+        <a href="#pro-koho">Pro koho</a>
+        <a href="#cenik">Ceník</a>
+        <a href="#otazky">Otázky</a>
+        <a class="btn" data-atlas href="atlas/">Otevřít atlas</a>
+      </nav>
+    </div>
+  </header>
 
-<main>
   <section class="hero">
     <div class="wrap">
-      <div>
+      <div class="copy">
         <p class="eyebrow">3D anatomie pro studenty medicíny</p>
         <h1>Pitevna <em>v&nbsp;prohlížeči</em>.</h1>
         <p class="lede">Odkrývejte tělo vrstvu po vrstvě, procházejte ho řezy a učte se názvy struktur latinsky, česky i&nbsp;anglicky. Bez instalace, na počítači i&nbsp;v&nbsp;mobilu.</p>
@@ -176,16 +204,21 @@ footer a{color:var(--muted)}
           <dt>EN</dt><dd>Sternocleidomastoid</dd>
         </dl>
       </div>
-      <figure class="shot">
-        <picture>
-          <source type="image/webp" srcset="assets/atlas-preview-1x.webp 1360w, assets/atlas-preview.webp 2720w" sizes="(max-width: 900px) 100vw, 640px">
-          <img src="assets/atlas-preview.jpg" alt="Atlas v prohlížeči: průhledné svaly, kostra a orgány, vybraná játra s latinským, českým a anglickým názvem" width="2720" height="1720" fetchpriority="high">
-        </picture>
-        <figcaption>Skutečný pohled z atlasu: svaly zprůhledněné, vybraná játra (<span class="la">Hepar</span>).</figcaption>
-      </figure>
+      <div class="specimen" id="specimen">
+        <canvas id="heroCanvas" role="img" aria-label="Interaktivní 3D model lidského těla. Najeďte na kost nebo sval a kliknutím ho otevřete v atlase."></canvas>
+        <div class="modes" role="group" aria-label="Zobrazení modelu">
+          <button type="button" data-mode="0" aria-pressed="true">Kostra</button>
+          <button type="button" data-mode="1" aria-pressed="false">Svaly</button>
+        </div>
+        <div class="htip" id="htip" hidden><b></b><i class="la"></i><span></span></div>
+        <p class="hhint" id="hhint">Najeďte myší na kost nebo sval · kliknutím ho otevřete v atlase</p>
+        <div class="hload" id="hload">Načítám 3D model…</div>
+      </div>
     </div>
   </section>
+</div>
 
+<main>
   <div class="figures">
     <div class="wrap">
       <dl>
@@ -226,6 +259,13 @@ footer a{color:var(--muted)}
           <p>Zobrazte jen tepny ruky nebo svaly stehna. Okolí zprůhledníte, vybranou strukturu izolujete a přiblížíte.</p>
         </article>
       </div>
+      <figure class="shot">
+        <picture>
+          <source type="image/webp" srcset="assets/atlas-preview-1x.webp 1360w, assets/atlas-preview.webp 2720w" sizes="(max-width: 1220px) 100vw, 1140px">
+          <img src="assets/atlas-preview.jpg" alt="Atlas v prohlížeči: průhledné svaly, kostra a orgány, vybraná játra s latinským, českým a anglickým názvem" width="2720" height="1720" loading="lazy">
+        </picture>
+        <figcaption>Takhle vypadá atlas: svaly zprůhledněné, vybraná játra (<span class="la">Hepar</span>) s názvy ve třech jazycích.</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -289,7 +329,7 @@ footer a{color:var(--muted)}
 <footer>
   <div class="wrap">
     <div>
-      <p><b style="color:var(--ink)">Atlas lidského těla 3D</b> · výukový nástroj, nenahrazuje odbornou literaturu ani výuku na pitevně.</p>
+      <p><b>Atlas lidského těla 3D</b> · výukový nástroj, nenahrazuje odbornou literaturu ani výuku na pitevně.</p>
       <p id="footCredits">3D modely: BodyParts3D © The Database Center for Life Science (CC BY 4.0) · HuBMAP Human Reference Atlas (CC BY 4.0) · písmo IBM Plex (SIL OFL) · three.js (MIT).</p>
     </div>
     <div class="cols">
@@ -300,11 +340,15 @@ footer a{color:var(--muted)}
   </div>
 </footer>
 
+<script src="atlas/vendor/three.min.js"></script>
 <script>
 /* ---- settings you will want to edit ---- */
 const CONFIG = {
   atlasUrl: 'atlas/',                  // where the 3D atlas lives
   statsUrl: 'atlas/data/stats.json',   // written by tools/build_model.py
+  heroMeta: 'atlas/data/hero.json',    // written by tools/build_hero.py
+  heroData: 'atlas/data/hero.txt',
+  switchSeconds: 10,                   // how often the home-page body switches between skeleton and muscles
   contactEmail: ''                     // e.g. 'info@vasedomena.cz' — leave empty to hide the contact line
 };
 document.querySelectorAll('[data-atlas]').forEach(a => a.setAttribute('href', CONFIG.atlasUrl));
@@ -321,6 +365,175 @@ fetch(CONFIG.statsUrl).then(r => r.ok ? r.json() : null).then(s => {
   if (s.regions) document.getElementById('fRegions').textContent = f(s.regions);
   if (s.credits) { document.getElementById('faqSources').textContent = s.credits; document.getElementById('footCredits').textContent = s.credits + ' Písmo IBM Plex (SIL OFL), three.js (MIT).'; }
 }).catch(() => {});
+
+/* ================= live specimen ================= */
+(async function specimen() {
+  const box = document.getElementById('specimen'), cv = document.getElementById('heroCanvas');
+  const tip = document.getElementById('htip'), hload = document.getElementById('hload'), hint = document.getElementById('hhint');
+  const modeBtns = [...box.querySelectorAll('[data-mode]')];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function fallback() {
+    hload.innerHTML = '<img class="hfallback" src="assets/atlas-preview.jpg" alt="Náhled atlasu">';
+    box.querySelector('.modes').hidden = true; hint.hidden = true;
+  }
+  if (!window.THREE || !window.DecompressionStream) { fallback(); return; }
+  if (matchMedia('(hover: none)').matches) hint.textContent = 'Klepněte na kost nebo sval · dalším klepnutím ho otevřete v atlase';
+
+  let meta, buf;
+  try {
+    meta = await (await fetch(CONFIG.heroMeta)).json();
+    const txt = await (await fetch(CONFIG.heroData)).text();
+    const bin = atob(txt.trim()), u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    buf = await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+  } catch (e) { console.error(e); fallback(); return; }
+
+  /* ---- geometry ---- */
+  const V = meta.v, T = meta.t, lo = meta.min, ext = meta.max.map((m, i) => m - lo[i]);
+  const q = new Uint16Array(buf, 0, V * 3);
+  const pidOff = V * 6, pid = new Uint16Array(buf, pidOff, V);
+  let io = pidOff + V * 2; io = (io + 3) & ~3;
+  const idx = new Uint32Array(buf, io, T * 3);
+  const pos = new Float32Array(V * 3), pidF = new Float32Array(V);
+  for (let i = 0; i < V * 3; i++) pos[i] = lo[i % 3] + q[i] / 65535 * ext[i % 3];
+  for (let i = 0; i < V; i++) pidF[i] = pid[i];
+  const all = new THREE.BufferGeometry();
+  all.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  all.setAttribute('partIndex', new THREE.BufferAttribute(pidF, 1));
+  all.setIndex(new THREE.BufferAttribute(idx, 1));
+  all.computeVertexNormals();
+  function part(from, to) {
+    const g = new THREE.BufferGeometry();
+    for (const k of ['position', 'normal', 'partIndex']) g.setAttribute(k, all.getAttribute(k));
+    g.setIndex(new THREE.BufferAttribute(idx.subarray(from * 3, to * 3), 1));
+    g.computeBoundingSphere(); g.computeBoundingBox(); return g;
+  }
+  const gBones = part(0, meta.boneTris), gMus = part(meta.boneTris, T);
+
+  /* ---- materials: per-structure shade + hover glow ---- */
+  const U = { hover: { value: -1 }, glow: { value: new THREE.Color('#57d2ff') }, fade: { value: 0 } };
+  function mat(color, muscle) {
+    const m = new THREE.MeshStandardMaterial({ color, roughness: muscle ? .55 : .7, metalness: 0, transparent: muscle, depthWrite: true });
+    m.onBeforeCompile = sh => {
+      Object.assign(sh.uniforms, U);
+      sh.vertexShader = 'attribute float partIndex;\nuniform float hover;\nvarying float vHi;\nvarying float vShade;\n' +
+        sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+          vHi = abs(partIndex - hover) < 0.5 ? 1.0 : 0.0;
+          vShade = 0.86 + 0.22 * fract(sin(partIndex * 12.9898) * 43758.5453);`);
+      sh.fragmentShader = 'uniform vec3 glow;\nuniform float fade;\nvarying float vHi;\nvarying float vShade;\n' +
+        sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+          diffuseColor.rgb = mix(diffuseColor.rgb * vShade, glow, vHi * 0.75);
+          ${muscle ? 'diffuseColor.a = fade;' : ''}`)
+          .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          totalEmissiveRadiance += glow * vHi * 0.45;`);
+    };
+    m.customProgramCacheKey = () => muscle ? 'hero-muscle' : 'hero-bone';
+    return m;
+  }
+  const scene = new THREE.Scene(), body = new THREE.Group(); scene.add(body);
+  const bones = new THREE.Mesh(gBones, mat('#efe6d2', false));
+  const muscles = new THREE.Mesh(gMus, mat('#c9575a', true)); muscles.renderOrder = 1;
+  body.add(bones, muscles);
+  scene.add(new THREE.HemisphereLight(0xdbe8ff, 0x10204a, .75));
+  const key = new THREE.DirectionalLight(0xffffff, .85); key.position.set(-1.2, 2.2, 2.4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x6fc8ff, .9); rim.position.set(1.5, 1.2, -2.2); scene.add(rim);
+
+  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setClearColor(0x000000, 0);
+  const cam = new THREE.PerspectiveCamera(26, 1, .05, 20);
+  const center = new THREE.Vector3((meta.min[0] + meta.max[0]) / 2, (meta.min[1] + meta.max[1]) / 2, 0);
+  function fit() {
+    const r = box.getBoundingClientRect(); renderer.setSize(r.width, r.height, false);
+    cam.aspect = r.width / Math.max(1, r.height);
+    const h = (meta.max[1] - meta.min[1]) * 1.08, w = 0.95;
+    const t = Math.tan(cam.fov * Math.PI / 360);
+    const d = Math.max(h / 2 / t, w / 2 / (t * cam.aspect));
+    cam.position.set(center.x, center.y + .03, d + .2); cam.lookAt(center.x, center.y - .01, 0);
+    cam.updateProjectionMatrix(); dirty = true;
+  }
+  let dirty = true;
+  new ResizeObserver(fit).observe(box);
+  hload.hidden = true;
+
+  /* ---- skeleton <-> muscles ---- */
+  let mode = 0, fade = 0, auto = !reduce, lastSwitch = performance.now();
+  function setMode(m, byUser) {
+    mode = m; modeBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.mode === m)));
+    if (byUser) auto = false; lastSwitch = performance.now(); dirty = true;
+  }
+  modeBtns.forEach(b => b.addEventListener('click', () => setMode(+b.dataset.mode, true)));
+
+  /* ---- hover / click ---- */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  let hovered = -1, pointer = null, pickPending = false, overCanvas = false;
+  function pick() {
+    pickPending = false;
+    if (!pointer) return setHover(-1);
+    const r = cv.getBoundingClientRect();
+    ndc.set((pointer.x - r.left) / r.width * 2 - 1, -(pointer.y - r.top) / r.height * 2 + 1);
+    ray.setFromCamera(ndc, cam);
+    const targets = fade > .5 ? [muscles, bones] : [bones];
+    const hit = ray.intersectObjects(targets, false)[0];
+    setHover(hit ? pid[hit.face.a] : -1);
+  }
+  function setHover(h) {
+    if (h !== hovered) { hovered = h; U.hover.value = h; dirty = true; }
+    cv.classList.toggle('pointing', h >= 0);
+    if (h < 0 || !pointer) { tip.hidden = true; return; }
+    const p = meta.parts[h];
+    tip.querySelector('b').textContent = p[2];
+    tip.querySelector('i').textContent = p[3] !== p[2] ? p[3] : '';
+    tip.querySelector('span').textContent = pointer.touch ? 'Klepněte znovu pro otevření v atlase' : 'Kliknutím otevřete v atlase';
+    tip.hidden = false;
+    const r = box.getBoundingClientRect();
+    let x = pointer.x - r.left + 16, y = pointer.y - r.top + 16;
+    if (x + tip.offsetWidth > r.width - 6) x = pointer.x - r.left - tip.offsetWidth - 16;
+    if (y + tip.offsetHeight > r.height - 6) y = pointer.y - r.top - tip.offsetHeight - 16;
+    tip.style.transform = `translate(${Math.max(0, x)}px,${Math.max(0, y)}px)`;
+  }
+  function open(h) { location.href = CONFIG.atlasUrl + '#s-' + meta.parts[h][0]; }
+  cv.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    pointer = { x: e.clientX, y: e.clientY, touch: false }; overCanvas = true;
+    if (!pickPending) { pickPending = true; requestAnimationFrame(pick); }
+  });
+  cv.addEventListener('pointerleave', () => { pointer = null; overCanvas = false; setHover(-1); });
+  cv.addEventListener('click', e => {
+    if (e.pointerType === 'touch' || (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents)) return;
+    if (hovered >= 0) open(hovered);
+  });
+  let touchStart = null;
+  cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') touchStart = { x: e.clientX, y: e.clientY }; });
+  cv.addEventListener('pointerup', e => {
+    if (e.pointerType !== 'touch' || !touchStart) return;
+    if (Math.hypot(e.clientX - touchStart.x, e.clientY - touchStart.y) > 10) return;   // it was a scroll
+    const before = hovered;
+    pointer = { x: e.clientX, y: e.clientY, touch: true }; pick();
+    if (hovered >= 0 && hovered === before) open(hovered);
+    auto = false;
+  });
+  cv.addEventListener('keydown', e => { if (e.key === 'Enter' && hovered >= 0) open(hovered); });
+
+  /* ---- render loop: only while the hero is on screen ---- */
+  let visible = true;
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(box);
+  let last = performance.now(), angle = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (!visible || document.hidden) return;
+    if (auto && !overCanvas && now - lastSwitch > CONFIG.switchSeconds * 1000) setMode(mode ? 0 : 1, false);
+    const target = mode ? 1 : 0;
+    if (fade !== target) {
+      fade = reduce ? target : (target > fade ? Math.min(target, fade + dt / 1.2) : Math.max(target, fade - dt / 1.2));
+      U.fade.value = fade; muscles.visible = fade > .002; muscles.material.depthWrite = fade > .98; dirty = true;
+    }
+    if (!reduce && !overCanvas) { angle += dt * .28; body.rotation.y = Math.sin(angle) * .42; dirty = true; }
+    if (dirty) { body.position.x = 0; renderer.render(scene, cam); dirty = false; }
+  }
+  muscles.visible = false;
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>

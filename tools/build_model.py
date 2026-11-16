@@ -254,14 +254,14 @@ def region(c, name=''):
     return 'pelvis'
 
 # ------------------------------------------------------------------ simplification
-def simplify_to_budget(meshes, budget, log=print):
+def simplify_to_budget(meshes, budget, log=print, floor=400):
     total = sum(len(m.T) for m in meshes)
     if total <= budget:
         log(f'  {total:,} triangles — within budget, no simplification'); return meshes
     ratio = budget / total
     out = []
     for m in meshes:
-        n = len(m.T); target = max(min(n, 400), int(n * ratio))
+        n = len(m.T); target = max(min(n, floor), int(n * ratio))
         if n <= target * 1.15: out.append(m); continue
         diag = float(np.linalg.norm(np.ptp(m.V, 0))) or 1e-3
         cell = diag / max(8.0, np.sqrt(target) * 1.1)
@@ -401,6 +401,8 @@ def main():
     credits.setdefault('defaultHidden', [s for s in a.hide_by_default.split(',') if s])
     n, size = pack(items, a.out, credits)
     log(f'  {a.out}: parts.json + {n} blocks, {size/1e6:.1f} MB compressed')
+    import build_hero
+    build_hero.build(a.out, log=log)
 
     log('6/6 report')
     with open(os.path.join(a.report, 'missing_names.csv'), 'w', encoding='utf-8', newline='') as f:

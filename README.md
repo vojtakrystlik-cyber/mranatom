@@ -8,7 +8,7 @@ LICENSES.html         licence a zdroje (při výměně modelu je nutné ji uprav
 favicon.svg
 assets/               písma (IBM Plex, OFL), náhled atlasu, fonts.css
 atlas/index.html      3D atlas (vygenerovaný z tools/viewer_src.html)
-atlas/data/           data modelu: parts.json, body-N.txt, stats.json
+atlas/data/           data modelu: parts.json, body-N.txt, stats.json, hero.json + hero.txt (živé tělo na úvodní stránce)
 atlas/vendor/         three.js (MIT), bez závislosti na cizím CDN
 tools/                převodník modelu a slovník názvů
 _headers              cache pro Netlify / Cloudflare Pages
