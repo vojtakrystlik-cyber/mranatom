@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Interaktivní 3D pitevní atlas pro studenty medicíny. Kosti, svaly, orgány, cévy a nervy s názvy latinsky, česky a anglicky. Funguje v prohlížeči.">
 <meta property="og:title" content="Atlas lidského těla 3D">
-<meta property="og:description" content="Pitevna v prohlížeči: 3D atlas lidského těla s latinskou, českou a anglickou terminologií.">
+<meta property="og:description" content="Pitevna za rohem: 3D atlas lidského těla s latinskou, českou a anglickou terminologií.">
 <meta property="og:image" content="assets/atlas-preview.jpg">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/fonts.css">
@@ -190,8 +190,8 @@ footer a:hover{color:var(--hero-ink)}
     <div class="wrap">
       <div class="copy">
         <p class="eyebrow">3D anatomie pro studenty medicíny</p>
-        <h1>Pitevna <em>v&nbsp;prohlížeči</em>.</h1>
-        <p class="lede">Odkrývejte tělo vrstvu po vrstvě, procházejte ho řezy a učte se názvy struktur latinsky, česky i&nbsp;anglicky. Bez instalace, na počítači i&nbsp;v&nbsp;mobilu.</p>
+        <h1>Pitevna <em>za&nbsp;rohem</em>.</h1>
+        <p class="lede">Odkrývej tělo vrstvu po vrstvě, procházej ho řezy a uč se názvy struktur latinsky, česky i&nbsp;anglicky. Bez toho, abys musel krást těla z&nbsp;márnice.</p>
         <div class="cta">
           <a class="btn btn-primary" data-atlas href="atlas/">Otevřít atlas
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
@@ -199,19 +199,50 @@ footer a:hover{color:var(--hero-ink)}
         </div>
         <dl class="term" aria-label="Ukázka trojjazyčného názvosloví">
           <span class="cap">Každá struktura ve třech jazycích</span>
-          <dt>LA</dt><dd class="la">Musculus sternocleidomastoideus</dd>
-          <dt>CZ</dt><dd>Zdvihač hlavy (kývač)</dd>
-          <dt>EN</dt><dd>Sternocleidomastoid</dd>
+          <dt>LA</dt><dd class="la" id="termLa">Musculus sternocleidomastoideus</dd>
+          <dt>CZ</dt><dd id="termCs">Zdvihač hlavy (kývač)</dd>
+          <dt>EN</dt><dd id="termEn">Sternocleidomastoid</dd>
         </dl>
+        <script>
+        /* a different example at every visit; edit or extend freely: [Latin, Czech, English] */
+        (function () {
+          const T = [
+            ['Musculus sternocleidomastoideus', 'Zdvihač hlavy (kývač)', 'Sternocleidomastoid'],
+            ['Musculus biceps brachii', 'Dvojhlavý sval pažní', 'Biceps brachii'],
+            ['Musculus gluteus maximus', 'Velký sval hýžďový', 'Gluteus maximus'],
+            ['Musculus gastrocnemius', 'Dvojhlavý sval lýtkový', 'Gastrocnemius'],
+            ['Musculus quadriceps femoris', 'Čtyřhlavý sval stehenní', 'Quadriceps femoris'],
+            ['Musculus latissimus dorsi', 'Široký sval zádový', 'Latissimus dorsi'],
+            ['Musculus trapezius', 'Sval trapézový (kápový)', 'Trapezius'],
+            ['Musculus deltoideus', 'Sval deltový', 'Deltoid'],
+            ['Diaphragma', 'Bránice', 'Diaphragm'],
+            ['Os scaphoideum', 'Kost člunková', 'Scaphoid bone'],
+            ['Os temporale', 'Kost spánková', 'Temporal bone'],
+            ['Clavicula', 'Kost klíční', 'Clavicle'],
+            ['Hepar', 'Játra', 'Liver'],
+            ['Ren', 'Ledvina', 'Kidney'],
+            ['Pulmo', 'Plíce', 'Lung'],
+            ['Arteria carotis communis', 'Společná krkavice', 'Common carotid artery'],
+            ['Vena saphena magna', 'Velká skrytá žíla', 'Great saphenous vein'],
+            ['Nervus ischiadicus', 'Sedací nerv', 'Sciatic nerve']
+          ];
+          let last = -1; try { last = +localStorage.getItem('heroTerm'); } catch (e) {}
+          let i; do { i = Math.floor(Math.random() * T.length); } while (i === last && T.length > 1);
+          try { localStorage.setItem('heroTerm', i); } catch (e) {}
+          document.getElementById('termLa').textContent = T[i][0];
+          document.getElementById('termCs').textContent = T[i][1];
+          document.getElementById('termEn').textContent = T[i][2];
+        })();
+        </script>
       </div>
       <div class="specimen" id="specimen">
-        <canvas id="heroCanvas" role="img" aria-label="Interaktivní 3D model lidského těla. Najeďte na kost nebo sval a kliknutím ho otevřete v atlase."></canvas>
+        <canvas id="heroCanvas" role="img" aria-label="Interaktivní 3D model lidského těla. Najeď na kost nebo sval a kliknutím ho otevřeš v atlase."></canvas>
         <div class="modes" role="group" aria-label="Zobrazení modelu">
           <button type="button" data-mode="0" aria-pressed="true">Kostra</button>
           <button type="button" data-mode="1" aria-pressed="false">Svaly</button>
         </div>
         <div class="htip" id="htip" hidden><b></b><i class="la"></i><span></span></div>
-        <p class="hhint" id="hhint">Najeďte myší na kost nebo sval · kliknutím ho otevřete v atlase</p>
+        <p class="hhint" id="hhint">Najeď myší na kost nebo sval · kliknutím ho otevřeš v atlase</p>
         <div class="hload" id="hload">Načítám 3D model…</div>
       </div>
     </div>
@@ -234,29 +265,29 @@ footer a:hover{color:var(--hero-ink)}
     <div class="wrap">
       <div class="head">
         <p class="eyebrow">Funkce</p>
-        <h2>Učte se tak, jak to uvidíte na pitevně</h2>
-        <p>Atlas je postavený na segmentovaném modelu dospělého muže. Každý sval, kost, orgán i céva je samostatná struktura, kterou můžete vybrat, schovat nebo zkoumat zvlášť.</p>
+        <h2>Uč se tak, jak to uvidíš na pitevně</h2>
+        <p>Atlas je postavený na segmentovaném modelu dospělého muže. Každý sval, kost, orgán i céva je samostatná struktura, kterou můžeš vybrat, schovat nebo zkoumat zvlášť.</p>
       </div>
       <div class="features">
         <article class="feat">
           <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20 14.5 9.5M14.5 9.5l2-2 3 3-2 2M12 12l-3 3"/><path d="M17.5 3.5l3 3"/></svg></span>
           <h3>Virtuální pitva</h3>
-          <p>Skalpelem odebíráte struktury jednu po druhé od povrchových svalů až ke kostře. Cokoli vrátíte jedním kliknutím.</p>
+          <p>Skalpelem odebíráš struktury jednu po druhé od povrchových svalů až ke kostře. Cokoli vrátíš jedním kliknutím.</p>
         </article>
         <article class="feat">
           <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 4v16M4 12h16" stroke-dasharray="2 2.5"/></svg></span>
           <h3>Řezy tělem</h3>
-          <p>Sagitální, frontální i transverzální rovina. Posuvníkem projíždíte tělem a vidíte, jak struktury leží vůči sobě.</p>
+          <p>Sagitální, frontální i transverzální rovina. Posuvníkem projíždíš tělem a vidíš, jak struktury leží vůči sobě.</p>
         </article>
         <article class="feat">
           <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h9M8.5 4v2M6 6c0 4 3 7 7 8M11 6c-1 4-4 7-7 8"/><path d="M13 20l4-9 4 9M14.5 17h5"/></svg></span>
           <h3>Latinsky, česky, anglicky</h3>
-          <p>Latinské názvosloví a k němu čeština a angličtina. Hledat můžete v kterémkoli jazyce, i bez diakritiky.</p>
+          <p>Latinské názvosloví a k němu čeština a angličtina. Hledat můžeš v kterémkoli jazyce, i bez diakritiky.</p>
         </article>
         <article class="feat">
           <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
           <h3>Soustavy, oblasti, izolace</h3>
-          <p>Zobrazte jen tepny ruky nebo svaly stehna. Okolí zprůhledníte, vybranou strukturu izolujete a přiblížíte.</p>
+          <p>Zobraz si jen tepny ruky nebo svaly stehna. Okolí zprůhledníš, vybranou strukturu izoluješ a přiblížíš.</p>
         </article>
       </div>
       <figure class="shot">
@@ -281,7 +312,7 @@ footer a:hover{color:var(--hero-ink)}
           <ul>
             <li>Opakování topografie před zkouškou, kdykoli a kdekoli.</li>
             <li>Názvosloví v latině vedle češtiny, jak ho chce zkoušející.</li>
-            <li>Příprava na pitevnu: víte, co uvidíte, než to uvidíte.</li>
+            <li>Příprava na pitevnu: víš, co uvidíš, než to uvidíš.</li>
           </ul>
         </article>
         <article>
@@ -318,9 +349,9 @@ footer a:hover{color:var(--hero-ink)}
       <div class="head"><p class="eyebrow">Otázky</p><h2>Časté dotazy</h2></div>
       <div class="faq">
         <details><summary>Musím něco instalovat?</summary><p>Ne. Atlas běží v prohlížeči (Chrome, Edge, Firefox, Safari). Při prvním otevření se stáhne 3D model, další spuštění už jsou rychlejší.</p></details>
-        <details><summary>Funguje to na mobilu a tabletu?</summary><p>Ano. Tělem otáčíte prstem, dvěma prsty přibližujete a posouváte. Na velké obrazovce se ale s atlasem pracuje pohodlněji.</p></details>
+        <details><summary>Funguje to na mobilu a tabletu?</summary><p>Ano. Tělem otáčíš prstem, dvěma prsty přibližuješ a posouváš. Na velké obrazovce se ale s atlasem pracuje pohodlněji.</p></details>
         <details><summary>Odkud jsou 3D modely?</summary><p id="faqSources">Z otevřených vědeckých dat: BodyParts3D (Database Center for Life Science) a HuBMAP Human Reference Atlas, obojí pod licencí CC BY 4.0. Modely jsou upravené a zjednodušené pro web.</p></details>
-        <details><summary>Jsou názvy ověřené?</summary><p>Latinské a české názvy jsme doplnili ručně a průběžně je revidujeme. Pokud najdete chybu, dejte nám vědět, opravu nasadíme rychle.</p></details>
+        <details><summary>Jsou názvy ověřené?</summary><p>Latinské a české názvy jsme doplnili ručně a průběžně je revidujeme. Pokud najdeš chybu, dej nám vědět, opravu nasadíme rychle.</p></details>
       </div>
     </div>
   </section>
@@ -377,7 +408,7 @@ fetch(CONFIG.statsUrl).then(r => r.ok ? r.json() : null).then(s => {
     box.querySelector('.modes').hidden = true; hint.hidden = true;
   }
   if (!window.THREE || !window.DecompressionStream) { fallback(); return; }
-  if (matchMedia('(hover: none)').matches) hint.textContent = 'Klepněte na kost nebo sval · dalším klepnutím ho otevřete v atlase';
+  if (matchMedia('(hover: none)').matches) hint.textContent = 'Klepni na kost nebo sval · dalším klepnutím ho otevřeš v atlase';
 
   let meta, buf;
   try {
@@ -483,7 +514,7 @@ fetch(CONFIG.statsUrl).then(r => r.ok ? r.json() : null).then(s => {
     const p = meta.parts[h];
     tip.querySelector('b').textContent = p[2];
     tip.querySelector('i').textContent = p[3] !== p[2] ? p[3] : '';
-    tip.querySelector('span').textContent = pointer.touch ? 'Klepněte znovu pro otevření v atlase' : 'Kliknutím otevřete v atlase';
+    tip.querySelector('span').textContent = pointer.touch ? 'Klepni znovu a otevřeš ho v atlase' : 'Kliknutím otevřeš v atlase';
     tip.hidden = false;
     const r = box.getBoundingClientRect();
     let x = pointer.x - r.left + 16, y = pointer.y - r.top + 16;
