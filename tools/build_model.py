@@ -21,7 +21,7 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import decim, meshio, name_rules
+import decim, latin, meshio, name_rules
 
 SYS = ['skeletal', 'muscular', 'connective', 'cardiac', 'arterial', 'venous', 'nervous', 'sensory', 'respiratory',
        'digestive', 'urinary', 'reproductive', 'endocrine', 'lymphatic', 'integumentary']
@@ -296,7 +296,8 @@ def pack(items, out_dir, credits, chunk_bytes=3_000_000):
         po = len(cur); cur += Q.tobytes(); pad(cur)
         no = len(cur); cur += NN.tobytes(); pad(cur)
         io = len(cur); cur += I.tobytes(); pad(cur)
-        k = (it['en'], it['la'], it['cs'], 1)
+        la = latin.expand(it['la'])   # full words instead of M./A./V./R. abbreviations
+        k = (it['en'], la, it['cs'], 1, latin.gender(la))   # last item: gender of the Latin side word (dexter/dextra/dextrum)
         if k not in nidx: nidx[k] = len(names); names.append(list(k))
         c = (b0 + b1) / 2
         parts.append([it['en'] + {0: '', 1: ' (right)', 2: ' (left)'}[it['side']], nidx[k], it['side'], SYS.index(it['sys']), len(chunks), po, no, io,

@@ -81,6 +81,15 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .names{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0}
 .names dt{font:500 .68rem var(--f-mono);color:var(--muted);padding-top:3px}
 .names dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.practice{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg)}
+.practice .lbl{margin:0;flex:1 0 100%}
+.practice .chip{font-family:var(--f-mono)}
+.practice .chip[aria-pressed="true"]{text-decoration:line-through}
+.practice .btn{margin-left:auto;padding:4px 10px;font-size:.8rem}
+.reveal{display:inline-flex;align-items:center;gap:8px;border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:1px 8px;font:500 .8rem var(--f-ui);cursor:pointer}
+.reveal i{font-style:normal;letter-spacing:.2em;opacity:.55}
+.detail h2.q{color:var(--muted);font-weight:500;font-style:italic}
+.row .p.mask{color:var(--muted);letter-spacing:.25em}
 .muted{color:var(--muted)}
 .list{border:1px solid var(--line);border-radius:10px;overflow:auto;min-height:160px;flex:1}
 .grp-h{position:sticky;top:0;background:var(--panel);font:500 .66rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 12px 4px;display:flex;gap:6px;align-items:center}
@@ -152,6 +161,7 @@ kbd{font:500 .7rem var(--f-mono);border:1px solid var(--line);border-bottom-widt
     </section>
     <aside class="side" id="right">
       <input type="search" id="q" autocomplete="off">
+      <div class="practice" id="practice"></div>
       <div class="detail" id="detail"></div>
       <div class="lbl" style="margin:0"><span id="count"></span></div>
       <div class="list" id="list"></div>
@@ -193,8 +203,9 @@ const UI={cs:{title:'Atlas lidského těla 3D',sub:n=>'Pitevní prohlížeč · 
   ghost:'Průhlednost',views:['Zepředu','Zezadu','Zleva','Zprava','Shora'],scalpel:'Skalpel',undo:'Zpět',showAll:'Obnovit tělo',
   q:'Hledat latinsky, česky nebo anglicky…',count:n=>n===1?'1 struktura':(n>1&&n<5?n+' struktury':n+' struktur'),more:'Zobrazit dalších',
   empty:'Klikněte na strukturu v těle nebo v seznamu.',scalpelOn:'Skalpel: kliknutím odstraníte strukturu (Zpět ji vrátí).',
-  hint:['Tažení: otáčení','Pravé tl. / dva prsty: posun','Kolečko: zoom','H skrýt · G průhledně · I izolovat · Z zpět · F zaměřit'],
+  hint:['Tažení: otáčení','Pravé tl. / dva prsty: posun','Kolečko: zoom','H skrýt · G průhledně · I izolovat · Z zpět · F zaměřit · O odkrýt název · N náhodná'],
   focus:'Zaměřit',hide:'Skrýt',ghostB:'Průhledně',iso:'Izolovat',show:'Zobrazit',isoOff:'Zrušit izolaci',side:['','vpravo','vlevo'],sideH:'Strana',
+  pr:'Procvičování – skrýt názvy',prRand:'Náhodná struktura',prOff:'zobrazeno',prOn:'skryto',reveal:'Odkrýt',revealAll:'Odkrýt vše',guess:'Co je to za strukturu?',
   load:'Načítám 3D model',loadSub:(a,b,m)=>`${a} z ${b} bloků · ${m} MB`,loadErr:'Model se nepodařilo načíst. Zkuste stránku obnovit.',
   sTitle:'Nastavení',sPrim:'Hlavní jazyk názvů',sShow:'Zobrazované jazyky',sUi:'Jazyk rozhraní',sTag:'Popisek vybrané struktury v těle',
   sPick:'Klikat i na průhledné struktury',sIso:'Při izolaci ostatní',isoG:'průhledně',isoH:'skrýt',sReset:'Obnovit výchozí nastavení',sClose:'Zavřít',
@@ -206,18 +217,19 @@ const UI={cs:{title:'Atlas lidského těla 3D',sub:n=>'Pitevní prohlížeč · 
   ghost:'Ghost opacity',views:['Front','Back','Left','Right','Top'],scalpel:'Scalpel',undo:'Undo',showAll:'Restore body',
   q:'Search in Latin, Czech or English…',count:n=>n+(n===1?' structure':' structures'),more:'Show more',
   empty:'Click a structure on the body or in the list.',scalpelOn:'Scalpel: click to remove a structure (Undo brings it back).',
-  hint:['Drag: rotate','Right button / two fingers: pan','Wheel: zoom','H hide · G ghost · I isolate · Z undo · F focus'],
+  hint:['Drag: rotate','Right button / two fingers: pan','Wheel: zoom','H hide · G ghost · I isolate · Z undo · F focus · O reveal name · N random'],
   focus:'Focus',hide:'Hide',ghostB:'Ghost',iso:'Isolate',show:'Show',isoOff:'End isolation',side:['','right','left'],sideH:'Side',
+  pr:'Practice – hide names',prRand:'Random structure',prOff:'shown',prOn:'hidden',reveal:'Reveal',revealAll:'Reveal all',guess:'What structure is this?',
   load:'Loading 3D model',loadSub:(a,b,m)=>`${a} of ${b} blocks · ${m} MB`,loadErr:'The model failed to load. Try reloading the page.',
   sTitle:'Settings',sPrim:'Main naming language',sShow:'Languages shown',sUi:'Interface language',sTag:'Label on the selected structure',
   sPick:'Allow clicking ghosted structures',sIso:'When isolating, others are',isoG:'ghosted',isoH:'hidden',sReset:'Restore defaults',sClose:'Close',
   sNote:'Settings are saved in this browser.',
   about:'3D models: BodyParts3D (© The Database Center for Life Science, CC BY 4.0) and the HuBMAP Human Reference Atlas (Indiana University and the HuBMAP consortium, CC BY 4.0). Lung segments, the whole liver with its ligaments, coccyx, sigmoid colon, knee ligaments and menisci and palatine tonsils come from HuBMAP, fitted to the BodyParts3D body. BodyParts3D geometry simplified with tools from the human-atlas project (MIT). Latin and Czech names added by hand; have them reviewed before teaching.'}};
 
-const DEF={primary:'cs',langs:{la:true,cs:true,en:true},ui:'cs',ghostA:0.14,tag:true,pickGhost:false,isoMode:'ghost',ctxGhost:true,sys:null};
+const DEF={primary:'cs',langs:{la:true,cs:true,en:true},ui:'cs',ghostA:0.14,tag:true,pickGhost:false,isoMode:'ghost',ctxGhost:true,sys:null,hide:{la:false,cs:false,en:false}};
 let S;
 try{S=JSON.parse(localStorage.getItem('atlas3d')||'null')}catch(e){S=null}
-S=Object.assign({},DEF,S||{});S.langs=Object.assign({},DEF.langs,S.langs||{});
+S=Object.assign({},DEF,S||{});S.langs=Object.assign({},DEF.langs,S.langs||{});S.hide=Object.assign({},DEF.hide,S.hide||{});
 const save=()=>{try{localStorage.setItem('atlas3d',JSON.stringify(S))}catch(e){}};
 const T=k=>UI[S.ui][k];
 const $=s=>document.querySelector(s);
@@ -227,6 +239,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 let D=null,P=[],SYS=[],REG=[],sysState=[];
 const over=new Map();     // per-part override: 2 show, 1 ghost, 0 hidden
 let iso=null,region=-1,sel=-1,scalpel=false,q='',listLimit=300;
+let revealed=new Set();   // languages revealed once for the current structure (practice mode)
 const undoStack=[];
 
 /* ================= three.js scene ================= */
@@ -386,6 +399,7 @@ cv.addEventListener('pointerup',e=>{
 
 /* ================= selection & camera ================= */
 function select(i,fly){
+  if(i!==sel)revealed=new Set();
   sel=i;refresh();
   if(i>=0&&fly)focus(i);
   const row=document.querySelector(`.row[data-i="${i}"]`);if(row&&!fly)row.scrollIntoView({block:'nearest'});
@@ -411,21 +425,29 @@ function updateTag(){
   if(sel<0||!S.tag||!P[sel]){tag.hidden=true;return}
   const v=P[sel].c.clone().project(camera);
   if(v.z>1||Math.abs(v.x)>1.05||Math.abs(v.y)>1.05){tag.hidden=true;return}
-  const r=cv.getBoundingClientRect();tag.hidden=false;tag.textContent=nm(P[sel])[0].t;
+  const r=cv.getBoundingClientRect();tag.hidden=false;const fv=nm(P[sel]).find(x=>!masked(x.l));tag.textContent=fv?fv.t:'?';
   tag.style.left=((v.x+1)/2*r.width)+'px';tag.style.top=((1-v.y)/2*r.height)+'px';
 }
 
 /* ================= names ================= */
-function nm(p){
+const SIDE_LA={m:['dexter','sinister'],f:['dextra','sinistra'],n:['dextrum','sinistrum'],mp:['dextri','sinistri'],fp:['dextrae','sinistrae'],np:['dextra','sinistra']};
+function vals(p){
   const n=D.names[p.n],sfx=n[3]&&p.side;
-  const val={la:n[1]+(sfx?(p.side===1?' (dx.)':' (sin.)'):''),cs:(n[2]||n[1])+(sfx?' ('+UI.cs.side[p.side]+')':''),en:p.en};
-  return [S.primary,...['la','cs','en'].filter(l=>l!==S.primary&&S.langs[l])].map(l=>({l:(l==='cs'&&!n[2])?'la':l,t:val[l]}));
+  return {la:n[1]+(sfx?' '+(SIDE_LA[n[4]]||SIDE_LA.m)[p.side-1]:''),cs:n[2]?n[2]+(sfx?' ('+UI.cs.side[p.side]+')':''):'',en:p.en};
 }
+function nm(p){
+  const val=vals(p);
+  return [S.primary,...['la','cs','en'].filter(l=>l!==S.primary&&S.langs[l])].map(l=>(l==='cs'&&!val.cs)?{l:'la',src:'cs',t:val.la}:{l,src:l,t:val[l]});
+}
+/* practice: a language is masked when the user hides it and has not revealed it for this structure */
+const masked=(l,i=sel)=>!!S.hide[l]&&!(i===sel&&revealed.has(l));
 const sysName=k=>{const m=SYS_META[k];return S.primary==='la'?m[0]:S.ui==='cs'?m[1]:m[2]};
 const regName=k=>{const m=REG_META[k];return S.primary==='la'?m[0]:S.ui==='cs'?m[1]:m[2]};
 const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 let searchIdx=[];
-function buildSearch(){searchIdx=P.map(p=>{const n=D.names[p.n];return norm(p.en+' '+n[1]+' '+n[2])})}
+const ABBR=[[/\bmusculi\b/g,'mm.'],[/\bmusculus\b/g,'m.'],[/\barteriae\b/g,'aa.'],[/\barteria\b/g,'a.'],[/\bvenae\b/g,'vv.'],[/\bvena\b/g,'v.'],[/\bnervi\b/g,'nn.'],[/\bnervus\b/g,'n.'],[/\brami\b/g,'rr.'],[/\bramus\b/g,'r.'],[/\bligamentum\b/g,'lig.']];
+function buildSearch(){searchIdx=P.map(p=>{const n=D.names[p.n],la=norm(n[1]);   // full Latin + the usual abbreviations (m., a., v. ...) so both search styles work
+  return norm(p.en+' '+n[2])+' '+la+' '+ABBR.reduce((t,[re,r])=>t.replace(re,r),la)})}
 
 /* ================= UI rendering ================= */
 const ICON={show:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="currentColor"/></svg>',
@@ -470,8 +492,10 @@ function renderList(){
   for(const g of groups){
     if(shown>=listLimit)break;
     h+=`<div class="grp-h"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:${SYS_META[g.k][3]}"></span>${esc(sysName(g.k))}</div>`;
-    for(const p of g.items){if(shown++>=listLimit)break;const n=nm(p),v=eff(p.i);
-      h+=`<button type="button" class="row${p.i===sel?' on':''}${v===0?' hid':''}" data-i="${p.i}"><span class="sw" style="background:${SYS_META[g.k][3]}"></span><span class="t"><span class="p ${n[0].l==='la'?'la':''}">${esc(n[0].t)}</span>${n.length>1?`<span class="s">${n.slice(1).map(x=>`<span class="${x.l==='la'?'la':''}">${esc(x.t)}</span>`).join(' · ')}</span>`:''}</span></button>`}
+    for(const p of g.items){if(shown++>=listLimit)break;const v=eff(p.i);
+      const n=nm(p).filter(x=>!masked(x.src,p.i));
+      const first=n.length?`<span class="p ${n[0].l==='la'?'la':''}">${esc(n[0].t)}</span>`:`<span class="p mask">•••</span>`;
+      h+=`<button type="button" class="row${p.i===sel?' on':''}${v===0?' hid':''}" data-i="${p.i}"><span class="sw" style="background:${SYS_META[g.k][3]}"></span><span class="t">${first}${n.length>1?`<span class="s">${n.slice(1).map(x=>`<span class="${x.l==='la'?'la':''}">${esc(x.t)}</span>`).join(' · ')}</span>`:''}</span></button>`}
   }
   if(items.length>listLimit)h+=`<div class="more"><button class="btn" type="button" id="moreBtn">${T('more')} (${items.length-listLimit})</button></div>`;
   $('#list').innerHTML=h;
@@ -479,19 +503,32 @@ function renderList(){
 function renderDetail(){
   const d=$('#detail');
   if(sel<0||!P[sel]){d.innerHTML=`<p class="muted" style="margin:0">${scalpel?T('scalpelOn'):T('empty')}</p>`;return}
-  const p=P[sel],n=D.names[p.n],names=nm(p),v=eff(sel);
-  const sfx=n[3]&&p.side;
-  const vals={la:n[1]+(sfx?(p.side===1?' (dx.)':' (sin.)'):''),cs:n[2]?n[2]+(sfx?' ('+UI.cs.side[p.side]+')':''):'—',en:p.en};
+  const p=P[sel],v=eff(sel),V=vals(p);if(!V.cs)V.cs='—';
+  const names=nm(p).filter(x=>!masked(x.src));
+  const langs=['la','cs','en'].filter(l=>S.langs[l]||l===S.primary||S.hide[l]);
+  const anyMasked=langs.some(l=>masked(l));
   d.innerHTML=`<div class="meta"><span class="sw" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SYS_META[SYS[p.sys]][3]}"></span>${esc(sysName(SYS[p.sys]))} · ${esc(regName(REG[p.reg]))}${p.side?' · '+T('side')[p.side]:''}</div>
-    <h2 class="${names[0].l==='la'?'la':''}">${esc(names[0].t)}</h2>
-    <dl class="names">${['la','cs','en'].filter(l=>S.langs[l]||l===S.primary).map(l=>`<dt>${LANGS[l].tag}</dt><dd class="${l==='la'?'la':''}">${esc(vals[l])}</dd>`).join('')}</dl>
+    ${names.length?`<h2 class="${names[0].l==='la'?'la':''}">${esc(names[0].t)}</h2>`:`<h2 class="q">${T('guess')}</h2>`}
+    <dl class="names">${langs.map(l=>`<dt>${LANGS[l].tag}</dt><dd class="${l==='la'?'la':''}">${masked(l)?`<button type="button" class="reveal" data-rev="${l}"><i>•••••</i>${T('reveal')}</button>`:esc(V[l])}</dd>`).join('')}</dl>
+    ${anyMasked&&langs.filter(l=>masked(l)).length>1?`<div><button type="button" class="reveal" data-rev="all">${T('revealAll')}</button></div>`:''}
     <div class="row2">
       <button class="btn" type="button" data-a="focus">${T('focus')}</button>
       ${v===2?`<button class="btn" type="button" data-a="hide">${T('hide')}</button><button class="btn" type="button" data-a="ghost">${T('ghostB')}</button>`:`<button class="btn" type="button" data-a="show">${T('show')}</button>`}
       ${iso?`<button class="btn" type="button" data-a="isooff">${T('isoOff')}</button>`:`<button class="btn" type="button" data-a="iso">${T('iso')}</button>`}
     </div>`;
 }
-function renderAll(){renderStatic();renderSys();renderRegions();renderList();renderDetail()}
+function renderPractice(){
+  $('#practice').innerHTML=`<div class="lbl">${T('pr')}</div>`+['la','cs','en'].map(l=>`<button type="button" class="chip" data-hide="${l}" aria-pressed="${!!S.hide[l]}" title="${LANGS[l][S.ui]}: ${S.hide[l]?T('prOn'):T('prOff')}">${LANGS[l].tag}</button>`).join('')+
+    `<button type="button" class="btn" id="prRand">${T('prRand')}</button>`;
+}
+function randomPart(){
+  const c=P.filter(p=>p.loaded&&p.size>0.012&&(over.has(p.i)?over.get(p.i):sysState[p.sys])===2&&(region<0||p.reg===region)&&p.i!==sel);if(!c.length)return;
+  const i=c[Math.floor(Math.random()*c.length)].i;
+  snapshot();iso=new Set([i]);   // isolate it (the rest per the isolation setting) so a deep structure is not hidden behind muscles
+  select(i,true);
+}
+function reveal(l){if(sel<0)return;if(l==='all')['la','cs','en'].forEach(x=>revealed.add(x));else revealed.add(l);renderDetail();renderList();req()}
+function renderAll(){renderStatic();renderSys();renderRegions();renderPractice();renderList();renderDetail()}
 
 /* ================= events ================= */
 $('#sysList').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;snapshot();
@@ -529,7 +566,11 @@ $('#list').addEventListener('click',e=>{
   select(i,true);
   if(innerWidth<=1100)stage.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
 });
-$('#detail').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||sel<0)return;act(b.dataset.a)});
+$('#detail').addEventListener('click',e=>{const r=e.target.closest('[data-rev]');if(r){reveal(r.dataset.rev);return}
+  const b=e.target.closest('[data-a]');if(!b||sel<0)return;act(b.dataset.a)});
+$('#practice').addEventListener('click',e=>{
+  if(e.target.closest('#prRand')){randomPart();return}
+  const b=e.target.closest('[data-hide]');if(!b)return;const l=b.dataset.hide;S.hide[l]=!S.hide[l];revealed.delete(l);save();renderPractice();renderList();renderDetail();req()});
 function act(a){
   const i=sel;if(i<0)return;
   if(a==='focus')focus(i);
@@ -544,7 +585,9 @@ addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(!$('#drawer').hidden){closeSettings();return}select(-1);return}
   const k=e.key.toLowerCase();
   if((k==='z'&&(e.ctrlKey||e.metaKey))||k==='z'||k==='u'){e.preventDefault();undo();return}
+  if(k==='n'){randomPart();return}
   if(sel<0)return;
+  if(k==='o'){reveal('all');return}
   if(k==='h')act('hide');else if(k==='g')act('ghost');else if(k==='i')act(iso?'isooff':'iso');else if(k==='f')act('focus');
 });
 

@@ -12,11 +12,10 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import meshio
+import latin, meshio
 from build_model import simplify_to_budget
 
 SIDE_CS = {1: ' (vpravo)', 2: ' (vlevo)'}
-SIDE_LA = {1: ' (dx.)', 2: ' (sin.)'}
 SIDE_EN = {1: ' (right)', 2: ' (left)'}
 
 def load_atlas(data):
@@ -51,7 +50,7 @@ def build(data, bones_budget=55_000, muscles_budget=85_000, log=print):
         for k, ((i, p), m) in enumerate(zip(sel, meshes)):
             n = d['names'][p[1]]; side = p[2]; sfx = n[3] and side
             cs = (n[2] or n[1]) + (SIDE_CS.get(side, '') if sfx else '')
-            la = n[1] + (SIDE_LA.get(side, '') if sfx else '')
+            la = latin.with_side(n[1], n[4] if len(n) > 4 else latin.gender(n[1]), side) if sfx else n[1]
             en = n[0] + (SIDE_EN.get(side, '') if sfx else '')
             Q.append(np.rint((m.V - lo) / ext * 65535).astype('<u2'))
             PID.append(np.full(len(m.V), len(parts), '<u2'))
