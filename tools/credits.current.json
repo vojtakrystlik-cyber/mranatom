@@ -1,0 +1,10 @@
+{
+  "cs": "3D modely: BodyParts3D (© The Database Center for Life Science, licence CC BY 4.0) a HuBMAP Human Reference Atlas (Indiana University a konsorcium HuBMAP, licence CC BY 4.0). Z HuBMAP pochází plicní segmenty, celá játra s vazy, kostrč, esovitý tračník, vazy a menisky kolene a patrové mandle. Modely byly upraveny a zjednodušeny pro web. Latinské a české názvy doplněny ručně.",
+  "en": "3D models: BodyParts3D (© The Database Center for Life Science, CC BY 4.0) and the HuBMAP Human Reference Atlas (Indiana University and the HuBMAP consortium, CC BY 4.0). Lung segments, the whole liver with its ligaments, coccyx, sigmoid colon, knee ligaments and menisci and palatine tonsils come from HuBMAP. Models were modified and simplified for the web. Latin and Czech names added by hand.",
+  "links": [
+    {"label": "BodyParts3D", "url": "https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html"},
+    {"label": "HuBMAP HRA", "url": "https://humanatlas.io"},
+    {"label": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/"}
+  ],
+  "defaultHidden": ["integumentary"]
+}

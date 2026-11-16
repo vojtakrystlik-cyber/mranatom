@@ -1,0 +1,573 @@
+<title>Atlas lidského těla 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@1,400;1,500&display=swap">
+<style>
+/* Layout: dissection table in the middle (3D), systems & tools on the left, index & detail on the right. */
+:root{
+  --bg:#eceff2; --panel:#ffffff; --ink:#17202a; --muted:#5a6673; --line:#d5dbe2;
+  --stage:#dfe4e9; --accent:#2457d6; --accent-soft:#e3eafb; --warn:#b4471f;
+  --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-la:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1216; --panel:#141b22; --ink:#e4e9ee; --muted:#8f9ca9; --line:#25303a;
+  --stage:#10161c; --accent:#7ea4ff; --accent-soft:#1c2943; --warn:#f08a5d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1216; --panel:#141b22; --ink:#e4e9ee; --muted:#8f9ca9; --line:#25303a;
+  --stage:#10161c; --accent:#7ea4ff; --accent-soft:#1c2943; --warn:#f08a5d; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-ui)}
+.app{height:100%;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;padding-block:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap}
+.brand{flex:1 1 240px;min-width:0}
+h1{margin:0;font-size:1.3rem;font-weight:600;letter-spacing:-.01em}
+.brand p{margin:0;color:var(--muted);font-size:.85rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  font:500 .82rem var(--f-ui);padding:6px 11px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+a.btn{text-decoration:none}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.btn.warn[aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.main{flex:1;min-height:0;display:grid;grid-template-columns:270px minmax(0,1fr) 330px;gap:12px}
+.side{min-height:0;min-width:0;overflow:auto;display:flex;flex-direction:column;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.lbl{font:500 .68rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+.sys{display:flex;align-items:center;gap:8px;padding:3px 0}
+.sys .sw{width:10px;height:10px;border-radius:3px;flex:none}
+.sys .nm{flex:1;min-width:0;font-size:.85rem;overflow-wrap:anywhere}
+.sys .n{font:500 .68rem var(--f-mono);color:var(--muted)}
+.tri{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:none}
+.tri button{border:0;background:none;width:24px;height:22px;cursor:pointer;color:var(--muted);display:grid;place-items:center;padding:0}
+.tri button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.tri svg{width:12px;height:12px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:3px 10px;font:500 .78rem var(--f-ui);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.row2{display:flex;flex-wrap:wrap;gap:6px}
+.field{display:flex;flex-direction:column;gap:6px}
+select,input[type=search]{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 10px;font:inherit;width:100%;box-sizing:border-box}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem}
+.check input{accent-color:var(--accent);width:15px;height:15px}
+.stage{position:relative;min-height:0;min-width:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--stage)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.stage.scalpel canvas{cursor:crosshair}
+.tools{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.tools>*{pointer-events:auto}
+.tools .grp{display:inline-flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.tools .grp .btn{border-color:transparent;padding:5px 9px}
+.tag{position:absolute;left:0;top:0;pointer-events:none;background:var(--panel);border:1px solid var(--accent);color:var(--ink);border-radius:6px;padding:3px 8px;
+  font-size:.8rem;white-space:nowrap;transform:translate(-50%,-140%);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.hint{position:absolute;left:10px;bottom:8px;right:10px;font:500 .68rem var(--f-mono);color:var(--muted);pointer-events:none;display:flex;flex-wrap:wrap;gap:4px 14px}
+.loader{position:absolute;inset:0;display:grid;place-items:center;background:var(--stage)}
+.loader .box{width:min(320px,80%);display:flex;flex-direction:column;gap:8px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.la{font-family:var(--f-la);font-style:italic}
+.detail{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.detail h2{margin:0;font-size:1.12rem;line-height:1.25;font-weight:600;text-wrap:balance}
+.detail h2.la{font-weight:500}
+.detail .meta{font:500 .68rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.names{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0}
+.names dt{font:500 .68rem var(--f-mono);color:var(--muted);padding-top:3px}
+.names dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.muted{color:var(--muted)}
+.list{border:1px solid var(--line);border-radius:10px;overflow:auto;min-height:160px;flex:1}
+.grp-h{position:sticky;top:0;background:var(--panel);font:500 .66rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 12px 4px;display:flex;gap:6px;align-items:center}
+.row{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);padding:6px 12px;cursor:pointer;font:inherit}
+.grp-h + .row{border-top:0}
+.row:hover{background:var(--accent-soft)}
+.row.on{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.row .sw{width:8px;height:8px;border-radius:2px;margin-top:6px;flex:none}
+.row .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.row .p{font-weight:500;overflow-wrap:anywhere}
+.row .s{font-size:.78rem;color:var(--muted);overflow-wrap:anywhere}
+.row.hid .p{text-decoration:line-through;color:var(--muted)}
+.more{padding:10px 12px}
+.backdrop{position:fixed;inset:0;background:rgba(10,15,20,.35);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:21;overflow:auto;box-sizing:border-box;
+  padding:calc(18px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) 20px;display:flex;flex-direction:column;gap:18px}
+.drawer h2{margin:0;font-size:1.1rem}
+.drawer .hd{display:flex;justify-content:space-between;align-items:center}
+.small{font-size:.78rem;color:var(--muted)}
+.small a{color:var(--accent)}
+kbd{font:500 .7rem var(--f-mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px}
+@media (max-width:1100px){
+  .app{height:auto;min-height:100%}
+  .main{grid-template-columns:minmax(0,1fr)}
+  .stage{height:68vh;min-height:420px;order:-1}
+  .side{overflow:visible}
+  .list{max-height:55vh}
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1 id="tTitle"></h1><p id="tSub"></p></div>
+    <a class="btn" id="homeLink" href="../"><span aria-hidden="true">←</span> <span id="tHome"></span></a>
+    <button class="btn" id="setBtn" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+      <span id="tSet"></span>
+    </button>
+  </header>
+  <div class="main">
+    <aside class="side" id="left">
+      <div><div class="lbl"><span id="tSys"></span></div><p class="small" id="tSysLeg" style="margin:-2px 0 8px"></p><div id="sysList"></div>
+        <div class="row2" style="margin-top:8px"><button class="btn" id="sysAll" type="button"></button><button class="btn" id="sysNone" type="button"></button></div></div>
+      <div><div class="lbl"><span id="tReg"></span></div><div class="chips" id="regChips"></div>
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="ctxGhost"> <span id="tCtx"></span></label></div>
+      <div class="field"><div class="lbl"><span id="tCut"></span></div>
+        <label class="check"><input type="checkbox" id="cutOn"> <span id="tCutOn"></span></label>
+        <select id="cutAxis"></select>
+        <input type="range" id="cutPos" min="0" max="1" step="0.001" value="0.5" aria-label="Poloha řezu">
+        <button class="btn" id="cutFlip" type="button"></button></div>
+      <div class="field"><div class="lbl"><span id="tGhost"></span></div><input type="range" id="ghostA" min="0.04" max="0.6" step="0.01" aria-label="Průhlednost"></div>
+      <p class="small" id="attr"></p>
+    </aside>
+    <section class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="tools">
+        <div class="grp" id="viewBtns"></div>
+        <div class="grp">
+          <button class="btn warn" id="scalpel" type="button" aria-pressed="false"></button>
+          <button class="btn" id="undo" type="button" disabled></button>
+          <button class="btn" id="showAll" type="button"></button>
+        </div>
+      </div>
+      <div class="tag" id="tag" hidden></div>
+      <div class="hint" id="hint"></div>
+      <div class="loader" id="loader"><div class="box"><div id="ldText"></div><div class="bar"><i id="ldBar"></i></div><div class="small" id="ldSub"></div></div></div>
+    </section>
+    <aside class="side" id="right">
+      <input type="search" id="q" autocomplete="off">
+      <div class="detail" id="detail"></div>
+      <div class="lbl" style="margin:0"><span id="count"></span></div>
+      <div class="list" id="list"></div>
+    </aside>
+  </div>
+</div>
+<div class="backdrop" id="backdrop" hidden></div>
+<div class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle"></div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+"use strict";
+/* ================= i18n & constants ================= */
+const SYS_META={
+ skeletal:['Systema skeletale','Kosti a chrupavky','Bones & cartilage','#e4d9bf'],
+ muscular:['Systema musculare','Svaly','Muscles','#b6463e'],
+ connective:['Ligamenta et membranae','Vazy, šlachy, membrány','Ligaments & tendons','#d6d0bf'],
+ cardiac:['Cor','Srdce','Heart','#a03a40'],
+ arterial:['Arteriae','Tepny','Arteries','#d22a2a'],
+ venous:['Venae','Žíly','Veins','#3a63c6'],
+ nervous:['Systema nervosum','Nervová soustava','Nervous system','#e2be3a'],
+ sensory:['Organa sensuum','Smyslové orgány','Sense organs','#c9a08a'],
+ respiratory:['Systema respiratorium','Dýchací soustava','Respiratory','#e39a9a'],
+ digestive:['Systema digestorium','Trávicí soustava','Digestive','#d6895f'],
+ urinary:['Systema urinarium','Močová soustava','Urinary','#c58a58'],
+ reproductive:['Organa genitalia','Pohlavní orgány','Reproductive','#c47b92'],
+ endocrine:['Glandulae endocrinae','Žlázy s vnitřní sekrecí','Endocrine','#a67bd0'],
+ lymphatic:['Systema lymphoideum','Mízní soustava','Lymphatic','#8a5fb0'],
+ integumentary:['Integumentum commune','Kůže a vlasy','Skin & hair','#dfb593']};
+const REG_META={caput:['Caput','Hlava','Head'],collum:['Collum','Krk','Neck'],humerus:['Regio deltoidea','Rameno','Shoulder'],
+ thorax:['Thorax','Hrudník','Chest'],dorsum:['Dorsum','Záda','Back'],abdomen:['Abdomen','Břicho','Abdomen'],pelvis:['Pelvis','Pánev','Pelvis'],
+ brachium:['Brachium','Paže','Upper arm'],antebrachium:['Antebrachium','Předloktí','Forearm'],manus:['Manus','Ruka','Hand'],
+ femur:['Regio femoris','Stehno','Thigh'],crus:['Crus','Bérec','Lower leg'],pes:['Pes','Noha (chodidlo)','Foot']};
+const LANGS={la:{cs:'Latina',en:'Latin',tag:'LA'},cs:{cs:'Čeština',en:'Czech',tag:'CZ'},en:{cs:'Angličtina',en:'English',tag:'EN'}};
+const UI={cs:{title:'Atlas lidského těla 3D',sub:n=>'Pitevní prohlížeč · '+(n?n.toLocaleString('cs-CZ')+' struktur · ':'')+'latinsky, česky, anglicky',set:'Nastavení',home:'Úvod',sys:'Soustavy',
+  legend:'zobrazit · průhledně · skrýt',all:'Vše zobrazit',none:'Vše skrýt',reg:'Oblast',whole:'Celé tělo',ctx:'Okolí ponechat průhledně',
+  cut:'Řez tělem',cutOn:'Zapnout řezovou rovinu',ax:['Sagitální (zleva doprava)','Frontální (zepředu dozadu)','Transverzální (shora dolů)'],flip:'Otočit stranu řezu',
+  ghost:'Průhlednost',views:['Zepředu','Zezadu','Zleva','Zprava','Shora'],scalpel:'Skalpel',undo:'Zpět',showAll:'Obnovit tělo',
+  q:'Hledat latinsky, česky nebo anglicky…',count:n=>n===1?'1 struktura':(n>1&&n<5?n+' struktury':n+' struktur'),more:'Zobrazit dalších',
+  empty:'Klikněte na strukturu v těle nebo v seznamu.',scalpelOn:'Skalpel: kliknutím odstraníte strukturu (Zpět ji vrátí).',
+  hint:['Tažení: otáčení','Pravé tl. / dva prsty: posun','Kolečko: zoom','H skrýt · G průhledně · I izolovat · Z zpět · F zaměřit'],
+  focus:'Zaměřit',hide:'Skrýt',ghostB:'Průhledně',iso:'Izolovat',show:'Zobrazit',isoOff:'Zrušit izolaci',side:['','vpravo','vlevo'],sideH:'Strana',
+  load:'Načítám 3D model',loadSub:(a,b,m)=>`${a} z ${b} bloků · ${m} MB`,loadErr:'Model se nepodařilo načíst. Zkuste stránku obnovit.',
+  sTitle:'Nastavení',sPrim:'Hlavní jazyk názvů',sShow:'Zobrazované jazyky',sUi:'Jazyk rozhraní',sTag:'Popisek vybrané struktury v těle',
+  sPick:'Klikat i na průhledné struktury',sIso:'Při izolaci ostatní',isoG:'průhledně',isoH:'skrýt',sReset:'Obnovit výchozí nastavení',sClose:'Zavřít',
+  sNote:'Nastavení se ukládá v tomto prohlížeči.',
+  about:'3D modely: BodyParts3D (© The Database Center for Life Science, CC BY 4.0) a HuBMAP Human Reference Atlas (Indiana University a konsorcium HuBMAP, CC BY 4.0). Z HuBMAP pochází plicní segmenty, celá játra s vazy, kostrč, esovitý tračník, vazy a menisky kolene a patrové mandle, napasované na tělo BodyParts3D. Geometrie BodyParts3D zjednodušena nástroji projektu human-atlas (MIT). Latinské a české názvy doplněny ručně; před výukou je nechte zkontrolovat.'},
+ en:{title:'Human Body Atlas 3D',sub:n=>'Dissection viewer · '+(n?n.toLocaleString('en')+' structures · ':'')+'Latin, Czech, English',set:'Settings',home:'Home',sys:'Systems',
+  legend:'show · ghost · hide',all:'Show all',none:'Hide all',reg:'Region',whole:'Whole body',ctx:'Keep surroundings ghosted',
+  cut:'Section plane',cutOn:'Enable section plane',ax:['Sagittal (left–right)','Coronal (front–back)','Transverse (top–bottom)'],flip:'Flip side',
+  ghost:'Ghost opacity',views:['Front','Back','Left','Right','Top'],scalpel:'Scalpel',undo:'Undo',showAll:'Restore body',
+  q:'Search in Latin, Czech or English…',count:n=>n+(n===1?' structure':' structures'),more:'Show more',
+  empty:'Click a structure on the body or in the list.',scalpelOn:'Scalpel: click to remove a structure (Undo brings it back).',
+  hint:['Drag: rotate','Right button / two fingers: pan','Wheel: zoom','H hide · G ghost · I isolate · Z undo · F focus'],
+  focus:'Focus',hide:'Hide',ghostB:'Ghost',iso:'Isolate',show:'Show',isoOff:'End isolation',side:['','right','left'],sideH:'Side',
+  load:'Loading 3D model',loadSub:(a,b,m)=>`${a} of ${b} blocks · ${m} MB`,loadErr:'The model failed to load. Try reloading the page.',
+  sTitle:'Settings',sPrim:'Main naming language',sShow:'Languages shown',sUi:'Interface language',sTag:'Label on the selected structure',
+  sPick:'Allow clicking ghosted structures',sIso:'When isolating, others are',isoG:'ghosted',isoH:'hidden',sReset:'Restore defaults',sClose:'Close',
+  sNote:'Settings are saved in this browser.',
+  about:'3D models: BodyParts3D (© The Database Center for Life Science, CC BY 4.0) and the HuBMAP Human Reference Atlas (Indiana University and the HuBMAP consortium, CC BY 4.0). Lung segments, the whole liver with its ligaments, coccyx, sigmoid colon, knee ligaments and menisci and palatine tonsils come from HuBMAP, fitted to the BodyParts3D body. BodyParts3D geometry simplified with tools from the human-atlas project (MIT). Latin and Czech names added by hand; have them reviewed before teaching.'}};
+
+const DEF={primary:'cs',langs:{la:true,cs:true,en:true},ui:'cs',ghostA:0.14,tag:true,pickGhost:false,isoMode:'ghost',ctxGhost:true,sys:null};
+let S;
+try{S=JSON.parse(localStorage.getItem('atlas3d')||'null')}catch(e){S=null}
+S=Object.assign({},DEF,S||{});S.langs=Object.assign({},DEF.langs,S.langs||{});
+const save=()=>{try{localStorage.setItem('atlas3d',JSON.stringify(S))}catch(e){}};
+const T=k=>UI[S.ui][k];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================= state ================= */
+let D=null,P=[],SYS=[],REG=[],sysState=[];
+const over=new Map();     // per-part override: 2 show, 1 ghost, 0 hidden
+let iso=null,region=-1,sel=-1,scalpel=false,q='',listLimit=300;
+const undoStack=[];
+
+/* ================= three.js scene ================= */
+const cv=$('#cv'),stage=$('#stage');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.localClippingEnabled=true;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(35,1,0.005,20);
+camera.position.set(0,0.95,3.1);
+const controls=new THREE.OrbitControls(camera,cv);
+controls.target.set(0,0.88,0);controls.enableDamping=true;controls.dampingFactor=0.12;controls.zoomSpeed=1.2;controls.minDistance=0.03;controls.maxDistance=6;
+controls.update();
+scene.add(new THREE.HemisphereLight(0xffffff,0x3a4048,0.55));
+scene.add(new THREE.AmbientLight(0xffffff,0.18));
+const lamp=new THREE.DirectionalLight(0xffffff,0.85);lamp.position.set(0.4,0.6,1);camera.add(lamp);scene.add(camera);
+const plane=new THREE.Plane(new THREE.Vector3(-1,0,0),0);
+let partTex=null,texData=null,W=1;
+const uniforms={partTex:{value:null},partW:{value:1},ghostA:{value:S.ghostA}};
+function makeMat(ghost){
+  const m=new THREE.MeshStandardMaterial({roughness:.62,metalness:0,side:ghost?THREE.FrontSide:THREE.DoubleSide,transparent:ghost,depthWrite:!ghost});
+  m.onBeforeCompile=sh=>{
+    sh.uniforms.partTex=uniforms.partTex;sh.uniforms.partW=uniforms.partW;sh.uniforms.ghostA=uniforms.ghostA;
+    sh.vertexShader='attribute float partIndex;\nuniform sampler2D partTex;\nuniform float partW;\nvarying vec3 vPartCol;\n'+
+      sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+        vec4 ps=texture2D(partTex,vec2((partIndex+0.5)/partW,0.5));vPartCol=ps.rgb;
+        ${ghost?'if(ps.a>0.75||ps.a<0.02)transformed=vec3(0.0);':'if(ps.a<0.75)transformed=vec3(0.0);'}`);
+    sh.fragmentShader='varying vec3 vPartCol;\nuniform float ghostA;\n'+sh.fragmentShader.replace('#include <color_fragment>',
+      `#include <color_fragment>\n diffuseColor.rgb=vPartCol;${ghost?' diffuseColor.a=ghostA;':''}`);
+  };
+  m.customProgramCacheKey=()=>ghost?'atlas-ghost':'atlas-opaque';
+  return m;
+}
+const matO=makeMat(false),matG=makeMat(true);
+let dirty=true;const req=()=>{dirty=true};
+controls.addEventListener('change',req);
+function resize(){const r=stage.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/Math.max(1,r.height);camera.updateProjectionMatrix();req()}
+new ResizeObserver(resize).observe(stage);
+function themeBg(){renderer.setClearColor(new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#dfe4e9'));req()}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',themeBg);
+new MutationObserver(themeBg).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+themeBg();
+
+let anim=null;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function flyTo(target,pos){
+  if(reduce){controls.target.copy(target);camera.position.copy(pos);controls.update();req();return}
+  const t0=performance.now(),a=controls.target.clone(),b=camera.position.clone();
+  anim=t=>{let k=Math.min(1,(t-t0)/550);k=1-Math.pow(1-k,3);controls.target.lerpVectors(a,target,k);camera.position.lerpVectors(b,pos,k);controls.update();req();if(k>=1)anim=null};
+}
+function loop(t){requestAnimationFrame(loop);if(anim)anim(t);if(controls.update())dirty=true;if(dirty){renderer.render(scene,camera);dirty=false;updateTag()}}
+requestAnimationFrame(loop);
+
+/* ================= colors & visibility ================= */
+const baseCol=[];
+function hash(i){let x=(i+1)*2654435761>>>0;x^=x>>>15;x=Math.imul(x,2246822519)>>>0;x^=x>>>13;return (x>>>0)/4294967295}
+function eff(i){
+  let v;
+  if(iso){v=iso.has(i)?2:(S.isoMode==='ghost'?1:0)}
+  else{v=over.has(i)?over.get(i):sysState[P[i].sys];if(region>=0&&P[i].reg!==region)v=Math.min(v,S.ctxGhost?1:0)}
+  return v;
+}
+const SELC=[255,204,51];
+function refresh(){
+  if(!texData)return;
+  for(let i=0;i<P.length;i++){const v=eff(i),c=i===sel?SELC:baseCol[i],o=i*4;
+    texData[o]=c[0];texData[o+1]=c[1];texData[o+2]=c[2];texData[o+3]=v===2?255:v===1?128:0}
+  partTex.needsUpdate=true;req();renderList();renderDetail();updUndo();
+}
+function snapshot(){undoStack.push({over:new Map(over),iso:iso?new Set(iso):null,sys:sysState.slice()});if(undoStack.length>200)undoStack.shift()}
+function undo(){const s=undoStack.pop();if(!s)return;over.clear();s.over.forEach((v,k)=>over.set(k,v));iso=s.iso;sysState=s.sys;S.sys=sysState.slice();save();renderSys();refresh()}
+function updUndo(){$('#undo').disabled=!undoStack.length}
+function setPart(i,v){snapshot();if(iso){iso.delete(i);if(v===2)iso.add(i)}over.set(i,v);refresh()}
+
+/* ================= loading ================= */
+function b64(s){const bin=atob(s.trim()),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer}
+async function gunzip(buf){
+  const u=new Uint8Array(buf,0,2);
+  if(u[0]!==0x1f||u[1]!==0x8b)return buf;
+  return await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+}
+function buildChunk(ci,buf){
+  const list=P.filter(p=>p.chunk===ci);let V=0,I=0;list.forEach(p=>{V+=p.vc;I+=p.ic});
+  const pos=new Float32Array(V*3),nor=new Int8Array(V*3),pid=new Float32Array(V),idx=new Uint32Array(I);
+  let vo=0,io=0;
+  for(const p of list){
+    const q=new Uint16Array(buf,p.pos,p.vc*3),ns=new Int8Array(buf,p.nor,p.vc*3),is=p.big?new Uint32Array(buf,p.idx,p.ic):new Uint16Array(buf,p.idx,p.ic);
+    const mn=p.box.min,ex=[p.box.max.x-mn.x,p.box.max.y-mn.y,p.box.max.z-mn.z],o=[mn.x,mn.y,mn.z];
+    for(let k=0,b=vo*3;k<q.length;k++)pos[b+k]=o[k%3]+q[k]/65535*ex[k%3];
+    nor.set(ns,vo*3);pid.fill(p.i,vo,vo+p.vc);
+    for(let k=0;k<p.ic;k++)idx[io+k]=is[k]+vo;
+    p.P=pos.subarray(vo*3,(vo+p.vc)*3);p.I=is;p.loaded=true;vo+=p.vc;io+=p.ic;
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('normal',new THREE.BufferAttribute(nor,3,true));
+  g.setAttribute('partIndex',new THREE.BufferAttribute(pid,1));
+  g.setIndex(new THREE.BufferAttribute(idx,1));g.computeBoundingSphere();
+  const mo=new THREE.Mesh(g,matO),mg=new THREE.Mesh(g,matG);mg.renderOrder=1;
+  mo.frustumCulled=mg.frustumCulled=false;scene.add(mo,mg);req();
+}
+async function load(){
+  const ldT=$('#ldText'),ldB=$('#ldBar'),ldS=$('#ldSub');ldT.textContent=T('load')+'…';
+  try{
+    D=await (await fetch('data/parts.json')).json();
+    SYS=D.sys;REG=D.reg;
+    P=D.parts.map((a,i)=>({i,en:a[0],n:a[1],side:a[2],sys:a[3],chunk:a[4],pos:a[5],nor:a[6],idx:a[7],vc:a[8],ic:a[9],big:a[10],reg:a[11],
+      c:new THREE.Vector3(a[12],a[13],a[14]),size:a[15],box:new THREE.Box3(new THREE.Vector3(a[16],a[17],a[18]),new THREE.Vector3(a[19],a[20],a[21]))}));
+    sysState=Array.isArray(S.sys)&&S.sys.length===SYS.length?S.sys.slice():SYS.map(s=>((D.credits&&D.credits.defaultHidden)||['integumentary']).includes(s)?0:2);
+    P.forEach((p,i)=>{const h=SYS_META[SYS[p.sys]][3],k=0.86+hash(i)*0.24;
+      baseCol[i]=[1,3,5].map(o=>Math.min(255,Math.round(parseInt(h.substr(o,2),16)*k)))});
+    W=P.length;texData=new Uint8Array(W*4);
+    partTex=new THREE.DataTexture(texData,W,1,THREE.RGBAFormat,THREE.UnsignedByteType);
+    partTex.magFilter=partTex.minFilter=THREE.NearestFilter;
+    uniforms.partTex.value=partTex;uniforms.partW.value=W;
+    buildSearch();renderAll();refresh();applyCut();
+    let done=0,bytes=0;const n=D.chunks;
+    const one=async ci=>{const r=await fetch(`data/body-${ci}.txt`);if(!r.ok)throw new Error('HTTP '+r.status);
+      const raw=b64(await r.text());bytes+=raw.byteLength;buildChunk(ci,await gunzip(raw));done++;
+      ldB.style.width=(done/n*100)+'%';ldS.textContent=T('loadSub')(done,n,(bytes/1048576).toFixed(1));};
+    const queue=[...Array(n).keys()];
+    await Promise.all([0,1,2,3].map(async()=>{while(queue.length)await one(queue.shift())}));
+    $('#loader').hidden=true;
+  }catch(e){ldT.textContent=T('loadErr');ldS.textContent=String(e&&e.message||e);console.error(e)}
+}
+
+/* ================= picking ================= */
+const ray=new THREE.Raycaster(),va=new THREE.Vector3(),vb=new THREE.Vector3(),vc3=new THREE.Vector3(),hit=new THREE.Vector3(),tmp=new THREE.Vector3();
+function pick(cx,cy){
+  const r=cv.getBoundingClientRect();
+  ray.setFromCamera({x:(cx-r.left)/r.width*2-1,y:-(cy-r.top)/r.height*2+1},camera);
+  const R=ray.ray,cand=[];
+  for(const p of P){if(!p.loaded)continue;const v=eff(p.i);if(v===0||(v===1&&!S.pickGhost))continue;
+    if(R.intersectBox(p.box,tmp))cand.push([R.origin.distanceTo(tmp),p])}
+  cand.sort((a,b)=>a[0]-b[0]);
+  let best=Infinity,bi=-1;
+  for(const [d,p] of cand){
+    if(d>best)break;
+    const A=p.P,I=p.I;
+    for(let k=0;k<I.length;k+=3){
+      va.fromArray(A,I[k]*3);vb.fromArray(A,I[k+1]*3);vc3.fromArray(A,I[k+2]*3);
+      if(R.intersectTriangle(va,vb,vc3,false,hit)){const dd=R.origin.distanceTo(hit);
+        if(dd<best&&(!S.cutOn||plane.distanceToPoint(hit)>=0)){best=dd;bi=p.i}}
+    }
+  }
+  return bi;
+}
+let down=null;
+cv.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,b:e.button}});
+cv.addEventListener('pointerup',e=>{
+  if(!down||down.b!==0)return;const m=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;if(m>5)return;
+  const i=pick(e.clientX,e.clientY);
+  if(scalpel){if(i>=0){if(sel===i)sel=-1;setPart(i,0)}return}
+  select(i);
+});
+
+/* ================= selection & camera ================= */
+function select(i,fly){
+  sel=i;refresh();
+  if(i>=0&&fly)focus(i);
+  const row=document.querySelector(`.row[data-i="${i}"]`);if(row&&!fly)row.scrollIntoView({block:'nearest'});
+}
+function focus(i){
+  const p=P[i],dir=camera.position.clone().sub(controls.target).normalize();
+  const dist=Math.max(0.09,p.size*2.6/Math.tan(camera.fov*Math.PI/360)/2.2);
+  flyTo(p.c.clone(),p.c.clone().add(dir.multiplyScalar(dist)));
+}
+function focusBox(box){
+  const c=box.getCenter(new THREE.Vector3()),s=box.getSize(new THREE.Vector3()),r=Math.max(s.x,s.y,s.z)*0.62;
+  const dir=camera.position.clone().sub(controls.target).normalize();
+  flyTo(c,c.clone().add(dir.multiplyScalar(Math.max(0.12,r/Math.tan(camera.fov*Math.PI/360)))));
+}
+const BODY=new THREE.Box3(new THREE.Vector3(-0.34,0,-0.15),new THREE.Vector3(0.34,1.73,0.15));
+function view(k){
+  const c=controls.target.clone(),d=camera.position.distanceTo(c);
+  const v=[[0,0,1],[0,0,-1],[1,0,0],[-1,0,0],[0,1,0.0001]][k];
+  flyTo(c,c.clone().add(new THREE.Vector3(...v).normalize().multiplyScalar(d)));
+}
+function updateTag(){
+  const tag=$('#tag');
+  if(sel<0||!S.tag||!P[sel]){tag.hidden=true;return}
+  const v=P[sel].c.clone().project(camera);
+  if(v.z>1||Math.abs(v.x)>1.05||Math.abs(v.y)>1.05){tag.hidden=true;return}
+  const r=cv.getBoundingClientRect();tag.hidden=false;tag.textContent=nm(P[sel])[0].t;
+  tag.style.left=((v.x+1)/2*r.width)+'px';tag.style.top=((1-v.y)/2*r.height)+'px';
+}
+
+/* ================= names ================= */
+function nm(p){
+  const n=D.names[p.n],sfx=n[3]&&p.side;
+  const val={la:n[1]+(sfx?(p.side===1?' (dx.)':' (sin.)'):''),cs:(n[2]||n[1])+(sfx?' ('+UI.cs.side[p.side]+')':''),en:p.en};
+  return [S.primary,...['la','cs','en'].filter(l=>l!==S.primary&&S.langs[l])].map(l=>({l:(l==='cs'&&!n[2])?'la':l,t:val[l]}));
+}
+const sysName=k=>{const m=SYS_META[k];return S.primary==='la'?m[0]:S.ui==='cs'?m[1]:m[2]};
+const regName=k=>{const m=REG_META[k];return S.primary==='la'?m[0]:S.ui==='cs'?m[1]:m[2]};
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+let searchIdx=[];
+function buildSearch(){searchIdx=P.map(p=>{const n=D.names[p.n];return norm(p.en+' '+n[1]+' '+n[2])})}
+
+/* ================= UI rendering ================= */
+const ICON={show:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="currentColor"/></svg>',
+  ghost:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 1.6"/></svg>',
+  hide:'<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 9.5l7-7" stroke="currentColor" stroke-width="1.5"/></svg>'};
+function about(){const c=D&&D.credits;return (c&&c[S.ui])||T('about')}
+function links(){const c=D&&D.credits;const L=(c&&c.links)||[{label:'BodyParts3D',url:'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html'},{label:'HuBMAP HRA',url:'https://humanatlas.io'},{label:'CC BY 4.0',url:'https://creativecommons.org/licenses/by/4.0/'}];
+  return L.map(l=>`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join(' · ')}
+function renderStatic(){
+  document.documentElement.lang=S.ui;
+  $('#tTitle').textContent=T('title');$('#tSub').textContent=T('sub')(P.length);$('#tSet').textContent=T('set');$('#tHome').textContent=T('home');
+  $('#tSys').textContent=T('sys');$('#tSysLeg').textContent=T('legend');$('#sysAll').textContent=T('all');$('#sysNone').textContent=T('none');
+  $('#tReg').textContent=T('reg');$('#tCtx').textContent=T('ctx');$('#tCut').textContent=T('cut');$('#tCutOn').textContent=T('cutOn');
+  $('#cutAxis').innerHTML=T('ax').map((t,i)=>`<option value="${i}" ${(S.cutAxis||0)==i?'selected':''}>${t}</option>`).join('');
+  $('#cutFlip').textContent=T('flip');$('#tGhost').textContent=T('ghost');
+  $('#viewBtns').innerHTML=T('views').map((t,i)=>`<button class="btn" type="button" data-v="${i}">${t}</button>`).join('');
+  $('#scalpel').textContent=T('scalpel');$('#undo').textContent=T('undo');$('#showAll').textContent=T('showAll');
+  $('#q').placeholder=T('q');$('#hint').innerHTML=(scalpel?[T('scalpelOn')]:T('hint')).map(h=>`<span>${h}</span>`).join('');
+  $('#attr').textContent=about();$('#ctxGhost').checked=S.ctxGhost;$('#ghostA').value=S.ghostA;$('#cutOn').checked=!!S.cutOn;
+  $('#ldText').textContent=T('load')+'…';
+}
+function renderSys(){
+  const counts=SYS.map((_,k)=>P.filter(p=>p.sys===k).length);
+  $('#sysList').innerHTML=SYS.map((k,i)=>`<div class="sys"><span class="sw" style="background:${SYS_META[k][3]}"></span>
+    <span class="nm ${S.primary==='la'?'la':''}">${sysName(k)}</span><span class="n">${counts[i]}</span>
+    <span class="tri" role="group" aria-label="${esc(sysName(k))}">${[2,1,0].map(v=>`<button type="button" data-s="${i}" data-v="${v}" aria-pressed="${sysState[i]===v}" title="${v===2?T('show'):v===1?T('ghostB'):T('hide')}">${ICON[v===2?'show':v===1?'ghost':'hide']}</button>`).join('')}</span></div>`).join('');
+}
+function renderRegions(){
+  $('#regChips').innerHTML=`<button type="button" class="chip" data-r="-1" aria-pressed="${region<0}">${T('whole')}</button>`+
+    REG.map((k,i)=>`<button type="button" class="chip ${S.primary==='la'?'la':''}" data-r="${i}" aria-pressed="${region===i}">${regName(k)}</button>`).join('');
+}
+function matches(){
+  const n=q?norm(q):'';
+  return P.filter(p=>(region<0||p.reg===region)&&(!n||searchIdx[p.i].includes(n)));
+}
+function renderList(){
+  if(!D)return;
+  const items=matches();$('#count').textContent=T('count')(items.length);
+  const coll=new Intl.Collator(S.primary==='en'?'en':'cs');
+  const groups=SYS.map((k,i)=>({k,i,items:items.filter(p=>p.sys===i).sort((a,b)=>coll.compare(nm(a)[0].t,nm(b)[0].t))})).filter(g=>g.items.length);
+  let h='',shown=0;
+  for(const g of groups){
+    if(shown>=listLimit)break;
+    h+=`<div class="grp-h"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:${SYS_META[g.k][3]}"></span>${esc(sysName(g.k))}</div>`;
+    for(const p of g.items){if(shown++>=listLimit)break;const n=nm(p),v=eff(p.i);
+      h+=`<button type="button" class="row${p.i===sel?' on':''}${v===0?' hid':''}" data-i="${p.i}"><span class="sw" style="background:${SYS_META[g.k][3]}"></span><span class="t"><span class="p ${n[0].l==='la'?'la':''}">${esc(n[0].t)}</span>${n.length>1?`<span class="s">${n.slice(1).map(x=>`<span class="${x.l==='la'?'la':''}">${esc(x.t)}</span>`).join(' · ')}</span>`:''}</span></button>`}
+  }
+  if(items.length>listLimit)h+=`<div class="more"><button class="btn" type="button" id="moreBtn">${T('more')} (${items.length-listLimit})</button></div>`;
+  $('#list').innerHTML=h;
+}
+function renderDetail(){
+  const d=$('#detail');
+  if(sel<0||!P[sel]){d.innerHTML=`<p class="muted" style="margin:0">${scalpel?T('scalpelOn'):T('empty')}</p>`;return}
+  const p=P[sel],n=D.names[p.n],names=nm(p),v=eff(sel);
+  const sfx=n[3]&&p.side;
+  const vals={la:n[1]+(sfx?(p.side===1?' (dx.)':' (sin.)'):''),cs:n[2]?n[2]+(sfx?' ('+UI.cs.side[p.side]+')':''):'—',en:p.en};
+  d.innerHTML=`<div class="meta"><span class="sw" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SYS_META[SYS[p.sys]][3]}"></span>${esc(sysName(SYS[p.sys]))} · ${esc(regName(REG[p.reg]))}${p.side?' · '+T('side')[p.side]:''}</div>
+    <h2 class="${names[0].l==='la'?'la':''}">${esc(names[0].t)}</h2>
+    <dl class="names">${['la','cs','en'].filter(l=>S.langs[l]||l===S.primary).map(l=>`<dt>${LANGS[l].tag}</dt><dd class="${l==='la'?'la':''}">${esc(vals[l])}</dd>`).join('')}</dl>
+    <div class="row2">
+      <button class="btn" type="button" data-a="focus">${T('focus')}</button>
+      ${v===2?`<button class="btn" type="button" data-a="hide">${T('hide')}</button><button class="btn" type="button" data-a="ghost">${T('ghostB')}</button>`:`<button class="btn" type="button" data-a="show">${T('show')}</button>`}
+      ${iso?`<button class="btn" type="button" data-a="isooff">${T('isoOff')}</button>`:`<button class="btn" type="button" data-a="iso">${T('iso')}</button>`}
+    </div>`;
+}
+function renderAll(){renderStatic();renderSys();renderRegions();renderList();renderDetail()}
+
+/* ================= events ================= */
+$('#sysList').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;snapshot();
+  const i=+b.dataset.s,v=+b.dataset.v;sysState[i]=v;P.forEach(p=>{if(p.sys===i)over.delete(p.i)});S.sys=sysState.slice();save();renderSys();refresh()});
+$('#sysAll').onclick=()=>{snapshot();sysState=SYS.map(()=>2);over.clear();iso=null;S.sys=sysState.slice();save();renderSys();refresh()};
+$('#sysNone').onclick=()=>{snapshot();sysState=SYS.map(()=>0);over.clear();iso=null;S.sys=sysState.slice();save();renderSys();refresh()};
+$('#regChips').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;region=+b.dataset.r;listLimit=300;renderRegions();refresh();
+  if(region<0)flyTo(new THREE.Vector3(0,0.88,0),new THREE.Vector3(0,0.95,3.1));
+  else{const box=new THREE.Box3();P.forEach(p=>{if(p.reg===region)box.union(p.box)});focusBox(box)}});
+$('#ctxGhost').onchange=e=>{S.ctxGhost=e.target.checked;save();refresh()};
+$('#ghostA').oninput=e=>{S.ghostA=+e.target.value;uniforms.ghostA.value=S.ghostA;save();req()};
+function applyCut(){
+  const ax=+(S.cutAxis||0),t=+(S.cutPos??0.5),flip=S.cutFlip?-1:1;
+  const lo=[BODY.min.x,BODY.min.z,BODY.min.y][ax],hi=[BODY.max.x,BODY.max.z,BODY.max.y][ax];
+  const val=ax===2?hi-(hi-lo)*t:lo+(hi-lo)*t;
+  const n=[new THREE.Vector3(-1,0,0),new THREE.Vector3(0,0,-1),new THREE.Vector3(0,-1,0)][ax].multiplyScalar(flip);
+  const pt=new THREE.Vector3();pt.setComponent([0,2,1][ax],val);plane.setFromNormalAndCoplanarPoint(n,pt);
+  const planes=S.cutOn?[plane]:[];
+  [matO,matG].forEach(m=>{if((m.clippingPlanes||[]).length!==planes.length){m.clippingPlanes=planes;m.needsUpdate=true}});
+  req();
+}
+$('#cutOn').onchange=e=>{S.cutOn=e.target.checked;save();applyCut()};
+$('#cutAxis').onchange=e=>{S.cutAxis=+e.target.value;save();applyCut()};
+$('#cutPos').oninput=e=>{S.cutPos=+e.target.value;if(!S.cutOn){S.cutOn=true;$('#cutOn').checked=true}save();applyCut()};
+$('#cutFlip').onclick=()=>{S.cutFlip=!S.cutFlip;save();applyCut()};
+$('#viewBtns').addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(b)view(+b.dataset.v)});
+$('#scalpel').onclick=()=>{scalpel=!scalpel;$('#scalpel').setAttribute('aria-pressed',scalpel);stage.classList.toggle('scalpel',scalpel);renderStatic();renderDetail()};
+$('#undo').onclick=undo;
+$('#showAll').onclick=()=>{snapshot();over.clear();iso=null;region=-1;renderRegions();refresh()};
+$('#q').addEventListener('input',e=>{q=e.target.value.trim();listLimit=300;renderList()});
+$('#list').addEventListener('click',e=>{
+  if(e.target.id==='moreBtn'){listLimit+=300;renderList();return}
+  const b=e.target.closest('.row');if(!b)return;const i=+b.dataset.i;
+  if(eff(i)===0){snapshot();if(iso)iso.add(i);over.set(i,2)}
+  select(i,true);
+  if(innerWidth<=1100)stage.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+});
+$('#detail').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||sel<0)return;act(b.dataset.a)});
+function act(a){
+  const i=sel;if(i<0)return;
+  if(a==='focus')focus(i);
+  else if(a==='hide'){sel=-1;setPart(i,0)}
+  else if(a==='ghost')setPart(i,1);
+  else if(a==='show')setPart(i,2);
+  else if(a==='iso'){snapshot();iso=new Set([i]);refresh();focus(i)}
+  else if(a==='isooff'){snapshot();iso=null;refresh()}
+}
+addEventListener('keydown',e=>{
+  if(e.target.matches('input,select,textarea'))return;
+  if(e.key==='Escape'){if(!$('#drawer').hidden){closeSettings();return}select(-1);return}
+  const k=e.key.toLowerCase();
+  if((k==='z'&&(e.ctrlKey||e.metaKey))||k==='z'||k==='u'){e.preventDefault();undo();return}
+  if(sel<0)return;
+  if(k==='h')act('hide');else if(k==='g')act('ghost');else if(k==='i')act(iso?'isooff':'iso');else if(k==='f')act('focus');
+});
+
+/* ================= settings ================= */
+const drawer=$('#drawer'),backdrop=$('#backdrop');
+function renderSettings(){
+  const L=S.ui,radio=(name,val,opts)=>opts.map(([v,t])=>`<label class="check"><input type="radio" name="${name}" value="${v}" ${val===v?'checked':''}> ${t}</label>`).join('');
+  drawer.innerHTML=`<div class="hd"><h2 id="setTitle">${T('sTitle')}</h2><button class="btn" type="button" id="sClose">${T('sClose')}</button></div>
+   <div class="field"><div class="lbl">${T('sPrim')}</div><div class="row2">${radio('primary',S.primary,['la','cs','en'].map(l=>[l,LANGS[l][L]]))}</div></div>
+   <div class="field"><div class="lbl">${T('sShow')}</div><div class="row2">${['la','cs','en'].map(l=>`<label class="check"><input type="checkbox" id="lang-${l}" data-lang="${l}" ${S.langs[l]||l===S.primary?'checked':''} ${l===S.primary?'disabled':''}> ${LANGS[l][L]}</label>`).join('')}</div></div>
+   <div class="field"><div class="lbl">${T('sUi')}</div><div class="row2">${radio('ui',S.ui,[['cs','Čeština'],['en','English']])}</div></div>
+   <div class="field"><div class="lbl">${T('sIso')}</div><div class="row2">${radio('isoMode',S.isoMode,[['ghost',T('isoG')],['hide',T('isoH')]])}</div></div>
+   <div class="field"><label class="check"><input type="checkbox" id="sTag" ${S.tag?'checked':''}> ${T('sTag')}</label>
+     <label class="check"><input type="checkbox" id="sPick" ${S.pickGhost?'checked':''}> ${T('sPick')}</label></div>
+   <div class="field"><button class="btn" type="button" id="sReset">${T('sReset')}</button><span class="small">${T('sNote')}</span></div>
+   <p class="small">${esc(about())} ${links()} </p>`;
+  drawer.querySelectorAll('input[name=primary]').forEach(x=>x.onchange=()=>{S.primary=x.value;S.langs[x.value]=true;commit()});
+  drawer.querySelectorAll('input[name=ui]').forEach(x=>x.onchange=()=>{S.ui=x.value;commit()});
+  drawer.querySelectorAll('input[name=isoMode]').forEach(x=>x.onchange=()=>{S.isoMode=x.value;commit()});
+  drawer.querySelectorAll('[data-lang]').forEach(x=>x.onchange=()=>{S.langs[x.dataset.lang]=x.checked;commit()});
+  $('#sTag').onchange=e=>{S.tag=e.target.checked;save();req();if(!S.tag)$('#tag').hidden=true};
+  $('#sPick').onchange=e=>{S.pickGhost=e.target.checked;save()};
+  $('#sReset').onclick=()=>{const keep=S.sys;S=JSON.parse(JSON.stringify(DEF));S.sys=keep;uniforms.ghostA.value=S.ghostA;commit();applyCut()};
+  $('#sClose').onclick=closeSettings;
+}
+function commit(){save();renderAll();refresh();renderSettings()}
+function openSettings(){renderSettings();drawer.hidden=false;backdrop.hidden=false;$('#sClose').focus()}
+function closeSettings(){drawer.hidden=true;backdrop.hidden=true;$('#setBtn').focus()}
+$('#setBtn').onclick=openSettings;backdrop.onclick=closeSettings;
+
+/* ================= start ================= */
+renderStatic();$('#cutPos').value=S.cutPos??0.5;
+load();
+</script>

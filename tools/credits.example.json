@@ -1,0 +1,8 @@
+{
+  "cs": "3D model: [Název modelu] © [Firma], použito na základě licence [typ licence, č. smlouvy]. Model byl upraven a zjednodušen pro web.",
+  "en": "3D model: [Model name] © [Company], used under licence [licence type / agreement no.]. Modified and simplified for the web.",
+  "links": [
+    {"label": "[Firma]", "url": "https://www.example.com"}
+  ],
+  "defaultHidden": ["integumentary"]
+}

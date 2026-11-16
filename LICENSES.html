@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Licence a zdroje – Atlas lidského těla 3D</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+:root{--bg:#eef1f4;--surface:#fff;--ink:#152030;--muted:#566475;--line:#d6dde5;--accent:#2457d6}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1217;--surface:#141b23;--ink:#e5eaf0;--muted:#94a2b1;--line:#25303b;--accent:#7ea4ff;color-scheme:dark}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "IBM Plex Sans",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:40px max(20px,env(safe-area-inset-right,0px)) 60px max(20px,env(safe-area-inset-left,0px))}
+h1{font-size:1.9rem;margin:18px 0 8px;letter-spacing:-.01em}
+h2{font-size:1.1rem;margin:0 0 6px}
+a{color:var(--accent)}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:14px}
+.item p{margin:4px 0;color:var(--muted)}
+.lic{font:500 .75rem "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+  <a href="./">← Zpět na úvod</a>
+  <h1>Licence a zdroje</h1>
+  <p style="color:var(--muted)">Atlas využívá tato díla třetích stran. Děkujeme jejich autorům.</p>
+
+  <div class="item">
+    <h2>BodyParts3D</h2>
+    <p class="lic">CC BY 4.0</p>
+    <p>© The Database Center for Life Science (DBCLS), Japonsko. 3D modely anatomických struktur dospělého muže. Modely byly upraveny: zjednodušeny, rozděleny, přejmenovány a doplněny o latinské a české názvy.</p>
+    <p><a href="https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html" target="_blank" rel="noopener">BodyParts3D</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Text licence</a></p>
+  </div>
+  <div class="item">
+    <h2>HuBMAP Human Reference Atlas – 3D Reference Organs</h2>
+    <p class="lic">CC BY 4.0</p>
+    <p>Indiana University a konsorcium HuBMAP (NIH Common Fund). Použito: plicní segmenty, játra s vazy, kostrč, esovitý tračník, vazy a menisky kolene, patrové mandle. Modely byly zjednodušeny a napasovány na tělo BodyParts3D.</p>
+    <p><a href="https://humanatlas.io" target="_blank" rel="noopener">humanatlas.io</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Text licence</a></p>
+  </div>
+  <div class="item">
+    <h2>three.js</h2>
+    <p class="lic">MIT</p>
+    <p>© 2010–2021 three.js authors. 3D vykreslování v prohlížeči. Text licence: <a href="atlas/vendor/LICENSE-three.js.txt">LICENSE</a>.</p>
+  </div>
+  <div class="item">
+    <h2>IBM Plex</h2>
+    <p class="lic">SIL Open Font License 1.1</p>
+    <p>© IBM Corp. Písmo webu. Text licence: <a href="assets/fonts/LICENSE-IBM-Plex-OFL.txt">LICENSE</a>.</p>
+  </div>
+  <p style="color:var(--muted);margin-top:24px;font-size:.9rem">Latinské a české názvosloví, webová aplikace a úpravy modelů jsou vlastní prací provozovatele.</p>
+</main>
+</body>
+</html>

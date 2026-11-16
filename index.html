@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Atlas lidského těla 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Interaktivní 3D pitevní atlas pro studenty medicíny. Kosti, svaly, orgány, cévy a nervy s názvy latinsky, česky a anglicky. Funguje v prohlížeči.">
+<meta property="og:title" content="Atlas lidského těla 3D">
+<meta property="og:description" content="Pitevna v prohlížeči: 3D atlas lidského těla s latinskou, českou a anglickou terminologií.">
+<meta property="og:image" content="assets/atlas-preview.jpg">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+/* Layout: one reading column with a wide hero; anatomy-lab palette — specimen bone, muscle red, cool steel ground, blue instrument accent. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --ink:#152030; --muted:#566475; --line:#d6dde5;
+  --accent:#2457d6; --accent-ink:#ffffff; --accent-soft:#e3eafb;
+  --muscle:#b8443d; --bone:#e6dcc6; --vessel:#3a63c6;
+  --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-la:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --shadow:0 1px 2px rgba(21,32,48,.06),0 12px 40px rgba(21,32,48,.10);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1217; --surface:#141b23; --ink:#e5eaf0; --muted:#94a2b1; --line:#25303b;
+  --accent:#7ea4ff; --accent-ink:#0d1217; --accent-soft:#1b2843;
+  --muscle:#e0675f; --bone:#cdbf9f; --vessel:#7e9ff0; --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 40px rgba(0,0,0,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1217; --surface:#141b23; --ink:#e5eaf0; --muted:#94a2b1; --line:#25303b;
+  --accent:#7ea4ff; --accent-ink:#0d1217; --accent-soft:#1b2843;
+  --muscle:#e0675f; --bone:#cdbf9f; --vessel:#7e9ff0; --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 40px rgba(0,0,0,.45); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+img{max-width:100%;display:block}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.la{font-family:var(--f-la);font-style:italic;font-weight:400}
+.eyebrow{font:500 .72rem var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h1,h2,h3{text-wrap:balance;margin:0;letter-spacing:-.015em}
+h2{font-size:clamp(1.6rem,3vw,2.1rem);line-height:1.15;font-weight:600}
+h3{font-size:1.08rem;font-weight:600;line-height:1.3}
+p{margin:0}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:12px 20px;font:600 .97rem var(--f-ui);text-decoration:none;border:1px solid transparent;transition:transform .15s,background .15s,border-color .15s}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-ghost{border-color:var(--line);color:var(--ink);background:var(--surface)}
+.btn-ghost:hover{border-color:var(--muted)}
+.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* header */
+.top{padding-block:18px}
+.top .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--ink);text-decoration:none;margin-right:auto}
+.logo img{width:30px;height:30px}
+.nav{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+.nav a{color:var(--muted);text-decoration:none;font-size:.95rem}
+.nav a:hover{color:var(--ink)}
+.nav .btn{padding:8px 14px;font-size:.9rem}
+.nav a.btn-primary{color:var(--accent-ink)}
+
+/* hero */
+.hero{padding-block:36px 56px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:48px;align-items:center}
+.hero h1{font-size:clamp(2.3rem,5.4vw,3.9rem);line-height:1.02;font-weight:600}
+.hero h1 em{font-family:var(--f-la);font-style:italic;font-weight:500;color:var(--muscle)}
+.lede{margin-top:20px;font-size:1.12rem;color:var(--muted);max-width:34em}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.term{margin-top:34px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.95rem;max-width:30em;border-left:2px solid var(--muscle);padding-left:14px}
+.term dt{font:500 .7rem var(--f-mono);color:var(--muted);padding-top:4px}
+.term dd{margin:0;min-width:0}
+.term .cap{grid-column:1/-1;font:500 .7rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.shot{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
+.shot img{width:100%;height:auto;aspect-ratio:2720/1720}
+.shot figcaption{font-size:.82rem;color:var(--muted);padding:10px 14px;border-top:1px solid var(--line)}
+
+/* figures */
+.figures{border-block:1px solid var(--line);background:var(--surface)}
+.figures dl{margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.figures dl>div{padding:26px 22px;border-left:1px solid var(--line);min-width:0}
+.figures dl>div:first-child{border-left:0;padding-left:0}
+.figures dt{font:500 .72rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.figures dd{margin:6px 0 0;font-size:2rem;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+section.block{padding-block:84px}
+.head{max-width:44rem;margin-bottom:40px}
+.head p{margin-top:14px;color:var(--muted);font-size:1.05rem}
+
+/* features */
+.features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px;display:grid;grid-template-columns:44px 1fr;gap:4px 18px}
+.feat .ic{grid-row:span 2;width:44px;height:44px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.feat .ic svg{width:22px;height:22px}
+.feat p{color:var(--muted);margin-top:6px}
+
+/* audiences */
+.who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
+.who article{border-top:2px solid var(--ink);padding-top:20px}
+.who ul{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.who li{display:grid;grid-template-columns:18px 1fr;gap:10px;color:var(--muted)}
+.who li::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--muscle);margin-top:9px}
+.who article:nth-child(2) li::before{background:var(--vessel)}
+
+/* pricing */
+.price{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:34px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:32px;align-items:center}
+.price p{color:var(--muted);margin-top:12px}
+.tiers{display:grid;gap:12px}
+.tier{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;flex-wrap:wrap}
+.tier b{font-weight:600}
+.tier span{color:var(--muted);font-size:.92rem}
+.pill{display:inline-block;font:500 .7rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:4px 9px;border-radius:999px}
+
+/* faq */
+.faq{display:grid;gap:10px;max-width:52rem}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 20px}
+summary{cursor:pointer;padding:18px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:500 1.2rem var(--f-mono);color:var(--muted);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--muted);padding-bottom:18px;max-width:46rem}
+
+footer{border-top:1px solid var(--line);padding-block:36px 48px;color:var(--muted);font-size:.86rem}
+footer .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px}
+footer p+p{margin-top:8px}
+footer .cols{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+footer a{color:var(--muted)}
+
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:34px}
+  .figures dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .figures dl>div:nth-child(3){border-left:0;padding-left:0}
+  .figures dl>div:nth-child(n+3){border-top:1px solid var(--line)}
+  .figures dd{font-size:1.6rem}
+  .features,.who,.price{grid-template-columns:minmax(0,1fr)}
+  footer .wrap{grid-template-columns:minmax(0,1fr)}
+  .nav a:not(.btn){display:none}
+  section.block{padding-block:60px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="./"><img src="favicon.svg" alt="" width="30" height="30"><span>Atlas lidského těla 3D</span></a>
+    <nav class="nav" aria-label="Hlavní">
+      <a href="#funkce">Funkce</a>
+      <a href="#pro-koho">Pro koho</a>
+      <a href="#cenik">Ceník</a>
+      <a href="#otazky">Otázky</a>
+      <a class="btn btn-primary" data-atlas href="atlas/">Otevřít atlas</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">3D anatomie pro studenty medicíny</p>
+        <h1>Pitevna <em>v&nbsp;prohlížeči</em>.</h1>
+        <p class="lede">Odkrývejte tělo vrstvu po vrstvě, procházejte ho řezy a učte se názvy struktur latinsky, česky i&nbsp;anglicky. Bez instalace, na počítači i&nbsp;v&nbsp;mobilu.</p>
+        <div class="cta">
+          <a class="btn btn-primary" data-atlas href="atlas/">Otevřít atlas
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost" href="#funkce">Co atlas umí</a>
+        </div>
+        <dl class="term" aria-label="Ukázka trojjazyčného názvosloví">
+          <span class="cap">Každá struktura ve třech jazycích</span>
+          <dt>LA</dt><dd class="la">Musculus sternocleidomastoideus</dd>
+          <dt>CZ</dt><dd>Zdvihač hlavy (kývač)</dd>
+          <dt>EN</dt><dd>Sternocleidomastoid</dd>
+        </dl>
+      </div>
+      <figure class="shot">
+        <picture>
+          <source type="image/webp" srcset="assets/atlas-preview-1x.webp 1360w, assets/atlas-preview.webp 2720w" sizes="(max-width: 900px) 100vw, 640px">
+          <img src="assets/atlas-preview.jpg" alt="Atlas v prohlížeči: průhledné svaly, kostra a orgány, vybraná játra s latinským, českým a anglickým názvem" width="2720" height="1720" fetchpriority="high">
+        </picture>
+        <figcaption>Skutečný pohled z atlasu: svaly zprůhledněné, vybraná játra (<span class="la">Hepar</span>).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="figures">
+    <div class="wrap">
+      <dl>
+        <div><dt>Struktur</dt><dd id="fStructures">2 278</dd></div>
+        <div><dt>Soustav</dt><dd id="fSystems">15</dd></div>
+        <div><dt>Oblastí těla</dt><dd id="fRegions">13</dd></div>
+        <div><dt>Jazyky</dt><dd>LA · CZ · EN</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <section class="block" id="funkce">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Funkce</p>
+        <h2>Učte se tak, jak to uvidíte na pitevně</h2>
+        <p>Atlas je postavený na segmentovaném modelu dospělého muže. Každý sval, kost, orgán i céva je samostatná struktura, kterou můžete vybrat, schovat nebo zkoumat zvlášť.</p>
+      </div>
+      <div class="features">
+        <article class="feat">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20 14.5 9.5M14.5 9.5l2-2 3 3-2 2M12 12l-3 3"/><path d="M17.5 3.5l3 3"/></svg></span>
+          <h3>Virtuální pitva</h3>
+          <p>Skalpelem odebíráte struktury jednu po druhé od povrchových svalů až ke kostře. Cokoli vrátíte jedním kliknutím.</p>
+        </article>
+        <article class="feat">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 4v16M4 12h16" stroke-dasharray="2 2.5"/></svg></span>
+          <h3>Řezy tělem</h3>
+          <p>Sagitální, frontální i transverzální rovina. Posuvníkem projíždíte tělem a vidíte, jak struktury leží vůči sobě.</p>
+        </article>
+        <article class="feat">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h9M8.5 4v2M6 6c0 4 3 7 7 8M11 6c-1 4-4 7-7 8"/><path d="M13 20l4-9 4 9M14.5 17h5"/></svg></span>
+          <h3>Latinsky, česky, anglicky</h3>
+          <p>Latinské názvosloví a k němu čeština a angličtina. Hledat můžete v kterémkoli jazyce, i bez diakritiky.</p>
+        </article>
+        <article class="feat">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+          <h3>Soustavy, oblasti, izolace</h3>
+          <p>Zobrazte jen tepny ruky nebo svaly stehna. Okolí zprůhledníte, vybranou strukturu izolujete a přiblížíte.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="pro-koho" style="padding-top:0">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">Pro koho</p>
+        <h2>Na zkoušku z anatomie i do výuky</h2>
+      </div>
+      <div class="who">
+        <article>
+          <h3>Studenti medicíny</h3>
+          <ul>
+            <li>Opakování topografie před zkouškou, kdykoli a kdekoli.</li>
+            <li>Názvosloví v latině vedle češtiny, jak ho chce zkoušející.</li>
+            <li>Příprava na pitevnu: víte, co uvidíte, než to uvidíte.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>Fakulty a vyučující</h3>
+          <ul>
+            <li>Podklad do seminářů a přednášek promítnutý přímo z prohlížeče.</li>
+            <li>Licence pro celý ročník nebo ústav.</li>
+            <li>Tři jazyky názvosloví i pro zahraniční studenty.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="cenik" style="padding-top:0">
+    <div class="wrap">
+      <div class="price">
+        <div>
+          <span class="pill">Zkušební provoz</span>
+          <h2 style="margin-top:14px">Ceník připravujeme</h2>
+          <p>Atlas je teď ve zkušebním provozu. Placené předplatné pro studenty a licence pro fakulty spustíme spolu s rozšířeným modelem těla.</p>
+          <p id="contactLine" hidden>Zájem o licenci pro fakultu? Napište na <a id="contactMail" href="#"></a>.</p>
+        </div>
+        <div class="tiers">
+          <div class="tier"><b>Student</b><span>měsíční / roční předplatné</span></div>
+          <div class="tier"><b>Fakulta</b><span>licence pro ročník nebo ústav</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="otazky" style="padding-top:0">
+    <div class="wrap">
+      <div class="head"><p class="eyebrow">Otázky</p><h2>Časté dotazy</h2></div>
+      <div class="faq">
+        <details><summary>Musím něco instalovat?</summary><p>Ne. Atlas běží v prohlížeči (Chrome, Edge, Firefox, Safari). Při prvním otevření se stáhne 3D model, další spuštění už jsou rychlejší.</p></details>
+        <details><summary>Funguje to na mobilu a tabletu?</summary><p>Ano. Tělem otáčíte prstem, dvěma prsty přibližujete a posouváte. Na velké obrazovce se ale s atlasem pracuje pohodlněji.</p></details>
+        <details><summary>Odkud jsou 3D modely?</summary><p id="faqSources">Z otevřených vědeckých dat: BodyParts3D (Database Center for Life Science) a HuBMAP Human Reference Atlas, obojí pod licencí CC BY 4.0. Modely jsou upravené a zjednodušené pro web.</p></details>
+        <details><summary>Jsou názvy ověřené?</summary><p>Latinské a české názvy jsme doplnili ručně a průběžně je revidujeme. Pokud najdete chybu, dejte nám vědět, opravu nasadíme rychle.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b style="color:var(--ink)">Atlas lidského těla 3D</b> · výukový nástroj, nenahrazuje odbornou literaturu ani výuku na pitevně.</p>
+      <p id="footCredits">3D modely: BodyParts3D © The Database Center for Life Science (CC BY 4.0) · HuBMAP Human Reference Atlas (CC BY 4.0) · písmo IBM Plex (SIL OFL) · three.js (MIT).</p>
+    </div>
+    <div class="cols">
+      <a data-atlas href="atlas/">Atlas</a>
+      <a href="#cenik">Ceník</a>
+      <a href="LICENSES.html">Licence a zdroje</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---- settings you will want to edit ---- */
+const CONFIG = {
+  atlasUrl: 'atlas/',                  // where the 3D atlas lives
+  statsUrl: 'atlas/data/stats.json',   // written by tools/build_model.py
+  contactEmail: ''                     // e.g. 'info@vasedomena.cz' — leave empty to hide the contact line
+};
+document.querySelectorAll('[data-atlas]').forEach(a => a.setAttribute('href', CONFIG.atlasUrl));
+if (CONFIG.contactEmail) {
+  const m = document.getElementById('contactMail');
+  m.textContent = CONFIG.contactEmail; m.href = 'mailto:' + CONFIG.contactEmail;
+  document.getElementById('contactLine').hidden = false;
+}
+fetch(CONFIG.statsUrl).then(r => r.ok ? r.json() : null).then(s => {
+  if (!s) return;
+  const f = n => Number(n).toLocaleString('cs-CZ');
+  if (s.structures) document.getElementById('fStructures').textContent = f(s.structures);
+  if (s.systems) document.getElementById('fSystems').textContent = f(s.systems);
+  if (s.regions) document.getElementById('fRegions').textContent = f(s.regions);
+  if (s.credits) { document.getElementById('faqSources').textContent = s.credits; document.getElementById('footCredits').textContent = s.credits + ' Písmo IBM Plex (SIL OFL), three.js (MIT).'; }
+}).catch(() => {});
+</script>
+</body>
+</html>
